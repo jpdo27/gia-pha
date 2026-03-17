@@ -1066,13 +1066,27 @@ function computeRoles(rows){
         r._label=r.gender==='male'?'Con trai':'Con gái';
         return;
       }
-      // Đời 3+ → tìm nhánh gen=2 để xác định nội/ngoại
-      // Rule: nhánh đến từ CON TRAI của ông → cháu nội
-      //       nhánh đến từ CON GÁI của ông → cháu ngoại
+      // Đời 3+ → đi ngược đường máu từ r lên root
+      // Hễ gặp bất kỳ tổ tiên NỮ nào trong đường đi → cháu ngoại
+      // Chỉ khi toàn bộ đường đi là nam → cháu nội
+      // Lý do: con của cháu nội gái → cháu ngoại (đi qua dòng nữ)
+      function isNgoai(person){
+        let cur=person;
+        while(cur&&cur.parent_id){
+          const par=map[cur.parent_id];
+          if(!par)return false;
+          if(!par.parent_id&&!par.spouse_of)return false; // đến root, không gặp nữ
+          if(par.gender==='female')return true; // cha/mẹ là nữ → ngoại
+          cur=par;
+        }
+        return false;
+      }
+      const ngoai=isNgoai(r);
+      // Vẫn cần g2 để xác định xem có thuộc nhánh nào không
       const g2=findGen2Branch(r);
       if(!g2){r._role='blood';return;}
-      r._role=g2.gender==='male'?'chau-noi':'chau-ngoai';
-      r._label=g2.gender==='male'?'Cháu nội':'Cháu ngoại';
+      r._role=ngoai?'chau-ngoai':(g2.gender==='male'?'chau-noi':'chau-ngoai');
+      r._label=r._role==='chau-noi'?'Cháu nội':'Cháu ngoại';
     }
   });
 }
