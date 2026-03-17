@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Gia Phả Gia Đình Ông Bà Chánh Thám</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f4ede0;--paper:#fdf8ef;--ink:#2a1a0e;--ink2:#6b4c35;--ink3:#9c7358;--gold:#b8862a;--gold2:#e0b86a;--hdr:54px;--sub:38px;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Lora',Georgia,serif;color:var(--ink)}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+
+/* ── Header ── */
+#hdr{position:fixed;top:0;left:0;right:0;height:var(--hdr);background:var(--ink);display:flex;align-items:center;gap:10px;padding:0 16px;z-index:50;box-shadow:0 2px 16px rgba(0,0,0,.35)}
+#hdr-title{font-family:'Playfair Display',serif;font-size:17px;color:var(--gold2);letter-spacing:2px;font-weight:700;white-space:nowrap;flex-shrink:0}
+#search-wrap{flex:1;max-width:320px;margin:0 auto;position:relative}
+#search-inp{width:100%;padding:7px 12px 7px 32px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;color:#fff;font-family:'Lora',serif;font-size:13px;outline:none;transition:all .2s}
+#search-inp::placeholder{color:rgba(255,255,255,.4)}
+#search-inp:focus{background:rgba(255,255,255,.18);border-color:var(--gold2)}
+#si{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:rgba(255,255,255,.4);pointer-events:none}
+#sc{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:14px;display:none;padding:0 2px}
+#sc:hover{color:#fff}
+#view-btns{display:flex;gap:4px;flex-shrink:0}
+.vb{padding:6px 12px;border:1px solid rgba(255,255,255,.25);border-radius:6px;background:transparent;color:rgba(255,255,255,.6);font-family:'Lora',serif;font-size:12px;cursor:pointer;transition:all .18s;white-space:nowrap}
+.vb.on{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:500}
+.vb:not(.on):hover{background:rgba(255,255,255,.08)}
+
+/* ── Sub ── */
+#sub{position:fixed;top:var(--hdr);left:0;right:0;height:var(--sub);background:rgba(42,26,14,.92);backdrop-filter:blur(4px);display:flex;align-items:center;gap:8px;padding:0 14px;z-index:49;border-bottom:1px solid rgba(184,134,42,.25)}
+#breadcrumb{flex:1;display:flex;align-items:center;gap:5px;overflow:hidden;min-width:0}
+.bc-item{font-size:11px;color:var(--gold2);white-space:nowrap;cursor:pointer;padding:3px 8px;border-radius:10px;transition:background .15s;max-width:140px;overflow:hidden;text-overflow:ellipsis}
+.bc-item:hover{background:rgba(184,134,42,.2)}
+.bc-root{color:rgba(255,255,255,.5) !important;cursor:default !important}
+.bc-root:hover{background:transparent !important}
+.bc-sep{color:rgba(255,255,255,.25);font-size:10px;flex-shrink:0}
+#gen-pills{display:flex;gap:4px;flex-shrink:0}
+.gp{padding:5px 11px;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:transparent;color:rgba(255,255,255,.5);font-size:12px;cursor:pointer;transition:all .15s;font-family:'Lora',serif}
+.gp.on{background:var(--gold2);border-color:var(--gold2);color:var(--ink)}
+.gp:not(.on):hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.8)}
+
+/* ── Canvas ── */
+#tree-wrap{position:fixed;top:calc(var(--hdr) + var(--sub));left:0;right:0;bottom:0}
+#tree-svg{width:100%;height:100%;cursor:grab;display:block}
+#tree-svg:active{cursor:grabbing}
+#list-wrap{position:fixed;top:calc(var(--hdr) + var(--sub));left:0;right:0;bottom:0;overflow-y:auto;display:none;padding:20px}
+#list-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;max-width:1200px;margin:0 auto}
+.lcard{background:var(--paper);border-radius:14px;overflow:hidden;cursor:pointer;transition:transform .18s,box-shadow .18s;border:1px solid rgba(184,134,42,.2)}
+.lcard:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(42,26,14,.18)}
+.lcard-photo{width:100%;height:90px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:28px;font-weight:700;position:relative;overflow:hidden}
+.lcard-photo img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.lcard-body{padding:12px}
+.lcard-name{font-family:'Playfair Display',serif;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.lcard-gen{font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-style:italic}
+.lcard-meta{font-size:12px;color:var(--ink2);line-height:1.7}
+.lcard-meta span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lcard.dead .lcard-photo{opacity:.6}
+.lcard.dead .lcard-name::after{content:' †';font-size:10px;color:var(--ink3)}
+/* role colors */
+.role-chau-noi .lcard-photo{background:linear-gradient(135deg,#c8a000,#a07800) !important}
+.role-chau-ngoai .lcard-photo{background:linear-gradient(135deg,#3a9a5c,#1e7a3e) !important}
+.role-dau .lcard-photo{background:linear-gradient(135deg,#d46090,#a83468) !important}
+.role-re .lcard-photo{background:linear-gradient(135deg,#d4782a,#a85018) !important}
+.lcard-role{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;padding:2px 7px;border-radius:8px;display:inline-block;margin-bottom:4px}
+.role-chau-noi .lcard-role{background:#faeeda;color:#854F0B}
+.role-chau-ngoai .lcard-role{background:#eaf3de;color:#3B6D11}
+.role-dau .lcard-role{background:#fbeaf0;color:#993556}
+.role-re .lcard-role{background:#fff0e8;color:#854F0B}
+
+/* ── Xưng hô panel ── */
+#xh-wrap{position:fixed;top:calc(var(--hdr) + var(--sub));left:0;right:0;bottom:0;overflow-y:auto;display:none;padding:28px 20px}
+#xh-inner{max-width:680px;margin:0 auto}
+#xh-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--ink);margin-bottom:6px;font-weight:700}
+#xh-sub{font-size:14px;color:var(--ink2);margin-bottom:24px;line-height:1.6}
+#xh-selects{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin-bottom:24px}
+#xh-selects select{width:100%;padding:10px 14px;border:1.5px solid rgba(184,134,42,.4);border-radius:10px;background:var(--paper);font-family:'Lora',serif;font-size:13px;color:var(--ink);outline:none;appearance:none;cursor:pointer;transition:border-color .18s}
+#xh-selects select:focus{border-color:var(--gold)}
+#xh-arrow{font-size:20px;color:var(--gold2);text-align:center;flex-shrink:0}
+#xh-result{background:var(--paper);border-radius:16px;border:2px solid var(--gold);padding:28px 24px;text-align:center;min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#xh-term{font-family:'Playfair Display',serif;font-size:42px;font-weight:700;color:var(--ink);margin-bottom:8px;line-height:1.1}
+#xh-call{font-size:15px;color:var(--gold);font-style:italic;margin-bottom:14px}
+#xh-explain{font-size:14px;color:var(--ink2);line-height:1.7;max-width:400px}
+#xh-swap{margin-top:16px;padding:8px 20px;border:1px solid var(--gold);border-radius:20px;background:transparent;color:var(--gold);font-family:'Lora',serif;font-size:12px;cursor:pointer;transition:all .18s}
+#xh-swap:hover{background:var(--gold);color:var(--paper)}
+#xh-legend{margin-top:28px;padding:16px 20px;background:rgba(184,134,42,.08);border-radius:12px;font-size:13px;color:var(--ink2);line-height:2}
+#xh-legend b{color:var(--ink);font-weight:500}
+
+/* ── Stats ── */
+#stats{position:fixed;bottom:16px;left:14px;background:rgba(42,26,14,.82);color:var(--gold2);padding:9px 15px;border-radius:10px;font-size:12px;line-height:2;z-index:50;backdrop-filter:blur(4px)}
+#stats b{color:#fff}
+#stats .sync-btn{background:none;border:none;color:var(--gold2);cursor:pointer;font-size:13px;vertical-align:middle;margin-left:4px;opacity:.7;transition:opacity .2s}
+#stats .sync-btn:hover{opacity:1}
+#stats .sync-btn.spin{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Controls ── */
+#ctrl{position:fixed;bottom:16px;right:14px;display:flex;flex-direction:column;gap:7px;z-index:50}
+.cb{width:40px;height:40px;background:var(--ink);color:var(--gold2);border:none;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.cb:hover{background:var(--gold);color:var(--ink)}
+
+/* ── Legend ── */
+#legend{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:rgba(42,26,14,.88);color:var(--gold2);font-size:12px;padding:6px 16px;border-radius:20px;z-index:50;display:flex;gap:14px;align-items:center;backdrop-filter:blur(4px);white-space:nowrap}
+.leg{display:flex;align-items:center;gap:5px}
+.ls{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* ── Loading / Error overlay ── */
+#overlay{position:fixed;inset:0;background:var(--bg);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;transition:opacity .4s}
+#overlay.gone{opacity:0;pointer-events:none}
+#ol-icon{font-size:42px;margin-bottom:14px}
+#ol-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--ink);margin-bottom:8px}
+#ol-sub{font-size:13px;color:var(--ink2);line-height:1.8;max-width:440px}
+#ol-spinner{width:36px;height:36px;border:3px solid rgba(184,134,42,.3);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:14px}
+code{background:rgba(42,26,14,.08);padding:2px 8px;border-radius:4px;font-size:12px}
+
+/* ── Search drop ── */
+#sdrop{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--paper);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.3);z-index:200;max-height:260px;overflow-y:auto;display:none}
+.sdi{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;border-bottom:1px solid rgba(184,134,42,.12);transition:background .12s}
+.sdi:last-child{border:none}
+.sdi:hover{background:rgba(184,134,42,.1)}
+.sda{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-family:'Playfair Display',serif;font-weight:700;color:#fff;flex-shrink:0;position:relative;overflow:hidden}
+.sda img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+mark{background:rgba(184,134,42,.35);color:var(--ink);border-radius:2px;padding:0 2px}
+
+/* ── Modal ── */
+#mover{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s}
+#mover.on{opacity:1;pointer-events:all}
+#modal{background:var(--paper);border-radius:18px;padding:24px 24px 20px;max-width:460px;width:94%;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.45);border-top:4px solid var(--gold);transform:translateY(16px);transition:transform .22s;max-height:88vh;overflow-y:auto}
+#mover.on #modal{transform:translateY(0)}
+#mcls{position:absolute;top:12px;right:14px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--ink3);line-height:1;z-index:2}
+#m-photo-wrap{position:relative;width:72px;height:72px;flex-shrink:0;cursor:pointer}
+#m-photo-wrap:hover #m-pov{opacity:1}
+#mava{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-family:'Playfair Display',serif;font-weight:700;color:#fff;border:3px solid var(--gold);overflow:hidden;position:relative}
+#mava img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}
+#m-pov{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .18s;font-size:18px}
+#m-photo-inp{display:none}
+#mname{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:2px;line-height:1.2;padding-right:24px}
+#mgen{font-size:13px;color:var(--gold);font-style:italic;margin-bottom:14px}
+#minfo{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mi label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gold);margin-bottom:2px}
+.mi span{font-size:15px;color:var(--ink)}
+hr.mdv{border:none;border-top:1px solid rgba(184,134,42,.25);margin:14px 0}
+#mnote{font-size:14px;color:var(--ink2);font-style:italic;line-height:1.65}
+#mbtns{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.mbtn{flex:1;min-width:120px;padding:10px 12px;border-radius:8px;font-family:'Lora',serif;font-size:13px;cursor:pointer;transition:all .2s;border:1px solid var(--gold);background:transparent;color:var(--gold)}
+.mbtn:hover{background:var(--gold);color:var(--paper)}
+.mbtn.pri{background:var(--gold);color:var(--paper)}
+.mbtn.pri:hover{background:var(--ink);border-color:var(--ink)}
+#rform{display:none;margin-top:12px;border-top:1px solid rgba(184,134,42,.25);padding-top:12px}
+#rform input,#rform textarea{width:100%;margin-bottom:8px;padding:9px 11px;border:1px solid rgba(184,134,42,.4);border-radius:6px;background:var(--bg);font-family:'Lora',serif;font-size:14px;color:var(--ink);outline:none}
+#rform textarea{min-height:68px;resize:vertical}
+#rform label{font-size:12px;color:var(--ink3);margin-bottom:3px;display:block;letter-spacing:.5px}
+#rsend{width:100%;padding:10px;background:var(--gold);border:none;border-radius:7px;color:var(--paper);font-family:'Lora',serif;font-size:14px;cursor:pointer;font-weight:500;transition:background .2s;margin-top:4px}
+#rsend:hover{background:var(--ink)}
+#rsend:disabled{opacity:.5;cursor:not-allowed}
+
+/* hint */
+#hint{position:fixed;top:calc(var(--hdr)+var(--sub)+10px);left:50%;transform:translateX(-50%);background:rgba(42,26,14,.85);color:var(--gold2);font-size:12px;padding:7px 18px;border-radius:20px;z-index:50;pointer-events:none;transition:opacity 1.2s;white-space:nowrap}
+#hint.gone{opacity:0}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(184,134,42,.4);border-radius:3px}
+
+/* ── Role filter pills in list ── */
+#role-pills{display:flex;gap:5px;flex-wrap:wrap;padding:10px 0 4px;max-width:1200px;margin:0 auto 4px}
+.rp{padding:6px 13px;border:1px solid rgba(184,134,42,.3);border-radius:12px;background:transparent;color:var(--ink2);font-size:12px;cursor:pointer;transition:all .15s;font-family:'Lora',serif;white-space:nowrap}
+.rp.on{background:var(--gold);border-color:var(--gold);color:var(--paper);font-weight:500}
+.rp:not(.on):hover{background:rgba(184,134,42,.1)}
+
+/* ── Mobile bottom tab bar ── */
+#mob-bar{display:none;position:fixed;bottom:0;left:0;right:0;height:58px;background:var(--ink);z-index:60;border-top:1px solid rgba(184,134,42,.2);align-items:stretch}
+.mbt{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;color:rgba(255,255,255,.45);cursor:pointer;padding:6px 2px;font-family:'Lora',serif;font-size:9px;letter-spacing:.3px;transition:color .15s}
+.mbt.on{color:var(--gold2)}
+.mbt .mbi{font-size:19px;line-height:1}
+/* Mobile search sheet */
+#mob-search{display:none;position:fixed;top:0;left:0;right:0;z-index:80;background:var(--ink);padding:10px 14px 12px;flex-direction:column;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+#mob-search.open{display:flex}
+#mob-search-inp{width:100%;padding:10px 14px 10px 36px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:22px;color:#fff;font-family:'Lora',serif;font-size:14px;outline:none}
+#mob-search-inp::placeholder{color:rgba(255,255,255,.4)}
+#mob-search-close{align-self:flex-end;background:none;border:none;color:var(--gold2);font-size:13px;cursor:pointer;padding:2px 0;font-family:'Lora',serif}
+#mob-sdrop{background:var(--paper);border-radius:12px;max-height:55vh;overflow-y:auto;display:none}
+#mob-si{position:absolute;left:26px;top:50%;transform:translateY(-50%);font-size:14px;color:rgba(255,255,255,.4);pointer-events:none}
+
+/* ── Mobile gen pill strip (inside sub) ── */
+@media(max-width:640px){
+  :root{--hdr:52px;--sub:44px;--mob-bar:62px}
+  body{font-size:16px}
+  /* header */
+  #hdr{padding:0 14px;gap:8px}
+  #hdr-title{font-size:15px;letter-spacing:1px;flex:1}
+  #search-wrap{display:none}
+  #view-btns{display:none}
+  #mob-search-icon{display:flex !important}
+  /* sub: gen pills scrollable */
+  #sub{overflow-x:auto;-webkit-overflow-scrolling:touch;gap:5px;padding:0 12px}
+  #breadcrumb{display:none}
+  #gen-pills{gap:5px;flex-shrink:0}
+  .gp{font-size:13px;padding:6px 13px}
+  /* content area */
+  #tree-wrap,#list-wrap,#xh-wrap{bottom:var(--mob-bar)}
+  #ctrl{display:none !important}
+  #legend{display:none !important}
+  #stats{bottom:calc(var(--mob-bar) + 10px);left:8px;font-size:11px;padding:6px 11px;line-height:1.9}
+  #mob-bar{display:flex}
+  .mbt{font-size:10px}
+  .mbt .mbi{font-size:22px}
+  /* list view */
+  #list-wrap{padding:10px}
+  #list-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .lcard-name{font-size:13px}
+  .lcard-meta{font-size:12px}
+  .lcard-photo{height:80px}
+  #role-pills{gap:6px;padding:10px 0 4px}
+  .rp{font-size:13px;padding:7px 14px}
+  /* modal: slide up */
+  #modal{border-radius:20px 20px 0 0;width:100%;max-width:100%;max-height:92vh;position:fixed;bottom:0;left:0;transform:translateY(100%);transition:transform .28s cubic-bezier(.32,.72,0,1);padding:20px 18px 16px}
+  #mover.on #modal{transform:translateY(0)}
+  #mover{align-items:flex-end}
+  #mname{font-size:20px}
+  .mi span{font-size:14px}
+  .mi label{font-size:11px}
+  #mnote{font-size:14px}
+  .mbtn{font-size:14px;padding:12px}
+  /* xh panel */
+  #xh-wrap{padding:16px 14px}
+  #xh-selects{grid-template-columns:1fr;gap:10px}
+  #xh-selects select{font-size:15px;padding:12px 14px}
+  #xh-arrow{display:none}
+  #xh-result{padding:20px 16px;min-height:120px}
+  #xh-term{font-size:34px}
+  #xh-call{font-size:14px}
+  #xh-explain{font-size:13px}
+  #xh-legend{font-size:13px}
+  /* mobile search sheet */
+  #mob-search-inp{font-size:16px;padding:12px 14px 12px 40px}
+  #mob-sdrop .sdi{padding:13px 14px}
+  #mob-sdrop .sda{width:38px;height:38px}
+}
+@media(min-width:641px){
+  #mob-bar{display:none !important}
+  #mob-search{display:none !important}
+  #mob-search-icon{display:none !important}
+}
+</style>
+</head>
+<body>
+
+<!-- ② THAY URL NÀY BẰNG URL CỦA APPS SCRIPT SAU KHI DEPLOY -->
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztVlH-nHquUdOZtrzA0P7ncYKU6nzX2CQSA5BsHnaXptaGFpOAgYa5lDxpnie79_6zXw/exec";
+</script>
+
+<!-- Loading overlay -->
+<div id="overlay">
+  <div id="ol-spinner"></div>
+  <div id="ol-title">Đang tải gia phả…</div>
+  <div id="ol-sub" id="ol-sub"></div>
+</div>
+
+<!-- Header -->
+<div id="hdr">
+  <div id="hdr-title">GIA PHẢ</div>
+  <div id="search-wrap">
+    <span id="si">🔍</span>
+    <input id="search-inp" type="text" placeholder="Tìm tên, quê, nghề…" autocomplete="off">
+    <button id="sc" onclick="clearSearch()">✕</button>
+    <div id="sdrop"></div>
+  </div>
+  <div id="view-btns">
+    <button class="vb on" id="vb-tree" onclick="switchView('tree')">🌳 Cây</button>
+    <button class="vb" id="vb-list" onclick="switchView('list')">☰ Danh sách</button>
+    <button class="vb" id="vb-xh" onclick="switchView('xh')">🤝 Xưng hô</button>
+  </div>
+</div>
+
+<div id="sub">
+  <div id="breadcrumb"><span class="bc-item bc-root" onclick="resetToRoot()">🏠 Toàn bộ</span></div>
+  <div id="gen-pills">
+    <button class="gp on" data-g="0" onclick="filterGen(0)">Tất cả</button>
+    <button class="gp" data-g="1" onclick="filterGen(1)">Đời 1</button>
+    <button class="gp" data-g="2" onclick="filterGen(2)">Đời 2</button>
+    <button class="gp" data-g="3" onclick="filterGen(3)">Đời 3</button>
+    <button class="gp" data-g="4" onclick="filterGen(4)">Đời 4</button>
+    <button class="gp" data-g="5" onclick="filterGen(5)">Đời 5</button>
+    <button class="gp" data-g="6" onclick="filterGen(6)">Đời 6</button>
+  </div>
+</div>
+
+<div id="tree-wrap"><svg id="tree-svg"></svg></div>
+<div id="list-wrap">
+  <div id="role-pills">
+    <button class="rp on" data-r="" onclick="filterRole('')">Tất cả</button>
+    <button class="rp" data-r="con" onclick="filterRole('con')">Con trai &amp; gái</button>
+    <button class="rp" data-r="chau-noi" onclick="filterRole('chau-noi')">Cháu nội</button>
+    <button class="rp" data-r="chau-ngoai" onclick="filterRole('chau-ngoai')">Cháu ngoại</button>
+    <button class="rp" data-r="dau" onclick="filterRole('dau')">Dâu</button>
+    <button class="rp" data-r="re" onclick="filterRole('re')">Rể</button>
+  </div>
+  <div id="list-grid"></div>
+  <div id="list-empty" style="display:none;text-align:center;padding:60px;color:var(--ink3);font-style:italic;font-size:14px">Không tìm thấy thành viên phù hợp.</div>
+</div>
+
+<div id="xh-wrap">
+  <div id="xh-inner">
+    <div id="xh-title">Tra cứu xưng hô</div>
+    <div id="xh-sub">Chọn hai người để biết cách gọi đúng trong gia đình.</div>
+    <div id="xh-selects">
+      <select id="xh-me" onchange="calcXH()"><option value="">-- Tôi là... --</option></select>
+      <div id="xh-arrow">→</div>
+      <select id="xh-them" onchange="calcXH()"><option value="">-- Gọi người này... --</option></select>
+    </div>
+    <div id="xh-result">
+      <div id="xh-term" style="color:var(--ink3);font-size:18px;font-weight:400">Chọn hai người ở trên</div>
+      <div id="xh-call"></div>
+      <div id="xh-explain"></div>
+      <button id="xh-swap" onclick="swapXH()" style="display:none">⇄ Đổi chiều</button>
+    </div>
+    <div id="xh-legend">
+      <b>Ghi chú:</b> Xưng hô theo phong tục miền Nam Việt Nam.<br>
+      Bên <b>nội</b> = họ hàng phía cha · Bên <b>ngoại</b> = họ hàng phía mẹ<br>
+      <b>Bác</b> = anh/chị của cha · <b>Chú/Cô</b> = em trai/gái của cha · <b>Cậu/Dì</b> = anh chị em của mẹ
+    </div>
+  </div>
+</div>
+
+<div id="stats"></div>
+
+<!-- Mobile bottom tab bar -->
+<div id="mob-bar">
+  <button class="mbt on" id="mbt-tree" onclick="mobTab('tree')">
+    <span class="mbi">🌳</span>Cây
+  </button>
+  <button class="mbt" id="mbt-list" onclick="mobTab('list')">
+    <span class="mbi">☰</span>Danh sách
+  </button>
+  <button class="mbt" id="mbt-xh" onclick="mobTab('xh')">
+    <span class="mbi">🤝</span>Xưng hô
+  </button>
+  <button class="mbt" id="mbt-search" onclick="openMobSearch()">
+    <span class="mbi">🔍</span>Tìm kiếm
+  </button>
+</div>
+
+<!-- Mobile search sheet -->
+<div id="mob-search">
+  <div style="position:relative">
+    <span id="mob-si">🔍</span>
+    <input id="mob-search-inp" type="text" placeholder="Tìm tên, quê, nghề…" autocomplete="off">
+  </div>
+  <div id="mob-sdrop"></div>
+  <button id="mob-search-close" onclick="closeMobSearch()">✕ Đóng</button>
+</div>
+<div id="ctrl">
+  <button class="cb" id="bZI">+</button>
+  <button class="cb" id="bZO">−</button>
+  <button class="cb" id="bFit" style="font-size:13px">⊡</button>
+</div>
+<div id="legend">
+  <div class="leg"><div class="ls" style="background:#ddeef5;border:1px solid #6aaac5"></div> Nam</div>
+  <div class="leg"><div class="ls" style="background:#f5dde8;border:1px solid #c57a9a"></div> Nữ</div>
+  <div class="leg"><div class="ls" style="background:rgba(221,238,245,.5);border:1px dashed #6aaac5"></div> Đã mất</div>
+  <div class="leg"><div class="ls" style="background:#c8a000"></div> Cháu nội</div>
+  <div class="leg"><div class="ls" style="background:#3a9a5c"></div> Cháu ngoại</div>
+  <div class="leg"><div class="ls" style="background:#d46090"></div> Dâu</div>
+  <div class="leg"><div class="ls" style="background:#d4782a"></div> Rể</div>
+</div>
+<div id="hint">🖱 Kéo &amp; cuộn để di chuyển · Click vào ô để xem chi tiết</div>
+
+<div id="mover">
+  <div id="modal">
+    <button id="mcls">✕</button>
+    <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px">
+      <div id="m-photo-wrap" onclick="triggerPhoto()">
+        <div id="mava"></div>
+        <div id="m-pov">📷</div>
+        <input type="file" id="m-photo-inp" accept="image/*" onchange="handlePhoto(this)">
+      </div>
+      <div style="flex:1">
+        <div id="mname"></div>
+        <div id="mgen"></div>
+        <div id="minfo"></div>
+      </div>
+    </div>
+    <hr class="mdv">
+    <div id="mnote"></div>
+    <div id="mbtns">
+      <button class="mbtn pri" id="mbranch" onclick="viewBranch()">🌿 Xem nhánh gia đình này</button>
+      <button class="mbtn" onclick="toggleReq()">✏ Yêu cầu chỉnh sửa</button>
+    </div>
+    <div id="rform">
+      <label>Họ &amp; tên bạn</label>
+      <input type="text" id="rf-name" placeholder="Nguyễn Văn A">
+      <label>Nội dung cần chỉnh sửa</label>
+      <textarea id="rf-content" placeholder="VD: Sửa năm sinh từ 1980 thành 1982…"></textarea>
+      <label>Email nhận phản hồi (tuỳ chọn)</label>
+      <input type="email" id="rf-email" placeholder="email@example.com">
+      <button id="rsend" onclick="submitReq()">Gửi yêu cầu</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONSTANTS
+// ============================================================
+const CW=118,CH=78,SG=10,DX=260,DY=190;
+const GEN_NAMES=["","Đời thứ nhất","Đời thứ hai (Con)","Đời thứ ba (Cháu)","Đời thứ tư (Chắt)","Đời thứ năm (Chút)","Đời thứ sáu (Chít)"];
+let allPpl=[],rootTree=null;
+let currentPerson=null,currentGenFilter=0,currentSearchQ='',currentRoleFilter='',viewMode='tree',branchStack=[];
+let focusStack=[];
+let fitTx=0,fitTy=0,fitScale=1;
+
+// ============================================================
+// LOAD DATA FROM APPS SCRIPT
+// ============================================================
+async function loadData(silent=false){
+  if(!silent){
+    document.getElementById('overlay').classList.remove('gone');
+    document.getElementById('ol-spinner').style.display='block';
+    document.getElementById('ol-title').textContent='Đang tải gia phả…';
+    document.getElementById('ol-sub').textContent='';
+  }
+  const syncBtn=document.querySelector('.sync-btn');
+  if(syncBtn)syncBtn.classList.add('spin');
+
+  const showErr=(msg)=>{
+    document.getElementById('ol-spinner').style.display='none';
+    document.getElementById('ol-title').textContent='Không thể tải dữ liệu';
+    document.getElementById('ol-sub').innerHTML=`<span style="color:#c04;font-weight:500">${msg}</span><br><br>
+      <button onclick="loadData()" style="margin-top:8px;padding:8px 18px;background:var(--gold);border:none;border-radius:8px;color:var(--paper);font-family:Lora,serif;cursor:pointer">↻ Thử lại</button>`;
+    console.error('[GIA PHẢ]', msg);
+  };
+  try{
+    if(SCRIPT_URL.includes('PASTE_YOUR'))throw new Error('Chưa cài URL Apps Script vào file HTML.');
+
+    // Fetch với timeout 20 giây
+    const ctrl=new AbortController();
+    const timer=setTimeout(()=>ctrl.abort(),20000);
+    let resp;
+    try{
+      resp=await fetch(SCRIPT_URL+'?t='+Date.now(),{signal:ctrl.signal});
+    }catch(fetchErr){
+      if(fetchErr.name==='AbortError')throw new Error('Timeout — Apps Script mất quá 20 giây. Kiểm tra lại URL và quyền deploy.');
+      throw new Error('Không kết nối được Apps Script. Nếu mở bằng file://, hãy dùng Live Server hoặc python -m http.server 8080. Chi tiết: '+fetchErr.message);
+    }finally{clearTimeout(timer);}
+
+    if(!resp.ok)throw new Error('HTTP '+resp.status+' — Apps Script trả về lỗi. Kiểm tra URL deploy.');
+
+    let rows;
+    try{rows=await resp.json();}
+    catch(e){throw new Error('Dữ liệu trả về không phải JSON hợp lệ. Có thể Apps Script đang redirect về trang login — kiểm tra Who has access = Anyone.');}
+
+    if(!Array.isArray(rows)){
+      if(rows&&rows.error)throw new Error('Apps Script báo lỗi: '+rows.error);
+      throw new Error('Dữ liệu không đúng định dạng. Sheet "Members" có thể chưa có dữ liệu hoặc header sai. Nhận được: '+JSON.stringify(rows).substring(0,120));
+    }
+    if(rows.length===0)throw new Error('Sheet "Members" trống — chưa có dữ liệu. Vui lòng nhập dữ liệu vào sheet trước.');
+
+    allPpl=normalizeRows(rows);
+    rootTree=buildTree(allPpl);
+    if(!rootTree)throw new Error('Không tìm được người đời 1 (gen=1, không có parent_id và spouse_of). Kiểm tra lại cột gen và parent_id trong sheet.');
+
+    document.getElementById('hdr-title').textContent='GIA PHẢ GIA ĐÌNH ÔNG BÀ CHÁNH THÁM';
+    document.title='Gia Phả Gia Đình Ông Bà Chánh Thám';
+    updateStats();
+    renderTree(rootTree);
+    if(viewMode==='list')renderListView();
+    document.getElementById('overlay').classList.add('gone');
+  }catch(err){
+    console.error('[GIA PHẢ]',err);
+    if(!silent)showErr(err.message);
+    else console.warn('Silent reload failed:',err.message);
+  }
+  if(syncBtn)syncBtn.classList.remove('spin');
+}
+
+// ============================================================
+// BUILD TREE FROM FLAT ROWS
+// ============================================================
+function buildTree(rows){
+  // Index all by id
+  const map={};
+  rows.forEach(r=>map[r.id]=Object.assign({},r,{children:[]}));
+
+  // Link parent_id — attach child to blood parent node
+  rows.forEach(r=>{
+    if(r.parent_id&&map[r.parent_id]&&!r.spouse_of){
+      // Set _coParentId trên map[r.id] (bản copy trong cây), KHÔNG phải r gốc
+      if(r.co_parent_id)map[r.id]._coParentId=r.co_parent_id.toString().trim();
+      map[r.parent_id].children.push(map[r.id]);
+    }
+  });
+
+  // Attach spouses — support multiple (1 chồng nhiều vợ hoặc ngược lại)
+  rows.forEach(r=>{
+    if(r.spouse_of&&map[r.spouse_of]){
+      if(!map[r.spouse_of].spouses)map[r.spouse_of].spouses=[];
+      map[r.spouse_of].spouses.push(map[r.id]);
+    }
+  });
+  // Gán .spouse = mảng spouses (render cạnh nhau trên cây)
+  rows.forEach(r=>{
+    if(map[r.id].spouses&&map[r.id].spouses.length>0){
+      map[r.id].spouse=map[r.id].spouses[0]; // spouse đầu tiên cho layout cũ
+    }
+  });
+
+  // Return gen=1 blood root (no parent_id, no spouse_of)
+  const roots=rows.filter(r=>!r.parent_id&&!r.spouse_of);
+  return roots.length?map[roots[0].id]:null;
+}
+
+// ============================================================
+// TREE RENDER
+// ============================================================
+const svg=d3.select('#tree-svg');
+const treeWrap=document.getElementById('tree-wrap');
+let W=treeWrap.clientWidth,H=treeWrap.clientHeight;
+svg.attr('width',W).attr('height',H);
+const g=svg.append('g').attr('id','mg');
+const zoom=d3.zoom().scaleExtent([0.05,4]).on('zoom',e=>g.attr('transform',e.transform));
+svg.call(zoom).on('dblclick.zoom',null);
+svg.on('click',()=>closeModal());
+
+// SP_DY: khoảng dọc giữa 2 dòng spouse khi có nhiều vợ/chồng
+const SP_DY=CH+28;
+const FAM_COLORS=['#b8862a','#5a9abf','#b06898','#5a9a78','#c87848','#8870b0'];
+const ROLE_COLORS={
+  'chau-noi': {fill:'#faeeda',bd:'#c8a000'},
+  'chau-ngoai':{fill:'#e4f2da',bd:'#3a9a5c'},
+  'dau':       {fill:'#fbeaf0',bd:'#d46090'},
+  're':        {fill:'#fff0e8',bd:'#d4782a'},
+};
+
+function renderTree(rootData){
+  g.selectAll('*').remove();
+  if(!rootData)return;
+  const root=d3.hierarchy(rootData,d=>d.children&&d.children.length?d.children:null);
+  d3.tree().nodeSize([DX,DY])(root);
+
+  // ── POST-PROCESS ──────────────────────────────────────────────
+  // Mục tiêu: node có N spouses chiếm N dòng dọc.
+  // Con của gia đình i treo bên dưới dòng i.
+  // Các sibling bên phải của node đa-spouse không bị ảnh hưởng x.
+
+  function shiftSubtree(d,dx,dy){
+    d.x+=dx; d.y+=dy;
+    if(d.children)d.children.forEach(c=>shiftSubtree(c,dx,dy));
+  }
+
+  // Với mỗi node có 2+ spouse: dịch y của con theo gia đình
+  root.each(d=>{
+    const spouses=d.data.spouses||[];
+    if(spouses.length<2||!d.children)return;
+    // Nhóm children theo family index
+    const groups=new Map();
+    d.children.forEach(c=>{
+      const coId=c.data._coParentId||null;
+      const idx=coId?Math.max(0,spouses.findIndex(s=>s.id===coId)):0;
+      if(!groups.has(idx))groups.set(idx,[]);
+      groups.get(idx).push(c);
+    });
+    // family 0 ở y = d.y + DY (default D3 position, no shift needed for y)
+    // family i ở y = d.y + i*SP_DY + DY
+    groups.forEach((children,idx)=>{
+      if(idx===0)return; // family 0 giữ nguyên
+      const dy=idx*SP_DY;
+      children.forEach(c=>shiftSubtree(c,0,dy));
+    });
+  });
+
+  const bgL=g.append('g');
+  const lgL=g.append('g');
+  const ngL=g.append('g');
+
+  // ── Background brackets cho node đa-spouse ──
+  root.descendants().forEach(d=>{
+    const spouses=d.data.spouses||[];
+    if(spouses.length<2)return;
+    spouses.forEach((sp,i)=>{
+      const col=FAM_COLORS[i%FAM_COLORS.length];
+      const ry=d.y+i*SP_DY-6, rh=CH+12;
+      bgL.append('rect')
+        .attr('x',d.x-4).attr('y',ry).attr('width',CW*2+SG+8).attr('height',rh)
+        .attr('rx',12).attr('fill',col).attr('opacity',.07)
+        .attr('stroke',col).attr('stroke-width',.6).attr('stroke-opacity',.35);
+      // Label badge
+      const bx=d.x+CW*2+SG-4, by=ry+rh-20;
+      bgL.append('rect').attr('x',bx).attr('y',by).attr('width',50).attr('height',16).attr('rx',8)
+        .attr('fill',col).attr('opacity',.82);
+      bgL.append('text').attr('x',bx+25).attr('y',by+10).attr('text-anchor','middle')
+        .attr('dominant-baseline','central').attr('font-size','9px')
+        .attr('font-family','Lora,serif').attr('fill','#fff').attr('font-weight','600')
+        .text('Gia đình '+(i+1));
+    });
+  });
+
+  // ── Links cha→con ──
+  root.links().forEach(lk=>{
+    const p=lk.source,c=lk.target;
+    const spouses=p.data.spouses||[];
+    const nSp=spouses.length;
+    const coId=c.data._coParentId||null;
+    let sx,sy,color,sw;
+    if(nSp===0){
+      sx=p.x+CW/2; sy=p.y+CH;
+      color=p.depth===0?'#b8862a':'#c8a06a'; sw=p.depth===0?2:1.4;
+    } else if(nSp===1){
+      sx=p.x+CW+SG/2; sy=p.y+CH;
+      color=p.depth===0?'#b8862a':'#c8a06a'; sw=p.depth===0?2:1.4;
+    } else {
+      const idx=coId?Math.max(0,spouses.findIndex(s=>s.id===coId)):0;
+      sx=p.x+CW+SG/2;
+      sy=p.y+idx*SP_DY+CH;
+      color=FAM_COLORS[idx%FAM_COLORS.length]; sw=1.5;
+    }
+    const tx=c.x+CW/2,ty=c.y,my=(sy+ty)/2;
+    lgL.append('path').attr('fill','none').attr('stroke',color)
+      .attr('stroke-width',sw).attr('opacity',.55)
+      .attr('d',`M${sx},${sy}C${sx},${my} ${tx},${my} ${tx},${ty}`);
+  });
+
+  // ── Connector ngang blood↔spouse ──
+  root.descendants().forEach(d=>{
+    const spouses=d.data.spouses||[];
+    if(!spouses.length)return;
+    if(spouses.length===1){
+      // 1 spouse: đường ngang đơn giản
+      const y=d.y+CH/2;
+      lgL.append('line').attr('x1',d.x+CW).attr('y1',y).attr('x2',d.x+CW+SG).attr('y2',y)
+        .attr('stroke','#b8862a').attr('stroke-width',1.2).attr('stroke-dasharray','4,3').attr('opacity',.5);
+    } else {
+      // N spouse: đường dọc bên trái + ngang đến từng spouse
+      const xv=d.x+CW/2;
+      const yTop=d.y+CH/2;
+      const yBot=d.y+(spouses.length-1)*SP_DY+CH/2;
+      lgL.append('line').attr('x1',xv).attr('y1',yTop).attr('x2',xv).attr('y2',yBot)
+        .attr('stroke','#b8862a').attr('stroke-width',1).attr('stroke-dasharray','3,3').attr('opacity',.4);
+      spouses.forEach((sp,i)=>{
+        const y=d.y+i*SP_DY+CH/2;
+        lgL.append('line').attr('x1',xv).attr('y1',y).attr('x2',d.x+CW+SG).attr('y2',y)
+          .attr('stroke',FAM_COLORS[i%FAM_COLORS.length]).attr('stroke-width',1.4)
+          .attr('stroke-dasharray','4,3').attr('opacity',.6);
+      });
+    }
+  });
+
+  // ── Cards ──
+  root.descendants().forEach(d=>{
+    mkCard(ngL,d.data,d.x,d.y);
+    const spouses=d.data.spouses||[];
+    if(spouses.length===1){
+      mkCard(ngL,spouses[0],d.x+(CW+SG),d.y);
+    } else {
+      spouses.forEach((sp,i)=>mkCard(ngL,sp,d.x+(CW+SG),d.y+i*SP_DY));
+    }
+  });
+
+  applyFilters();doFit();
+}
+
+
+function mkCard(parent,person,cx,cy){
+  const male=person.gender==='male',dead=!!person.death;
+  const role=person._role||'';
+  const rc=ROLE_COLORS[role];
+  const fill=rc?rc.fill:(male?'#ddeef5':'#f5dde8');
+  const bd=rc?rc.bd:(male?'#6aaac5':'#c57a9a');
+  const photo=getPhoto(person.id);
+  // data-gen: dùng gen của chính người đó, nếu là spouse thì dùng gen của partner
+  const genVal=person.gen||0;
+  const cg=parent.append('g').attr('class','node-card').attr('data-id',person.id).attr('data-gen',genVal)
+    .attr('transform',`translate(${cx},${cy})`).attr('opacity',dead?.58:1)
+    .style('cursor','pointer').on('click',e=>{e.stopPropagation();showModal(person);});
+  cg.append('rect').attr('x',2).attr('y',3).attr('width',CW).attr('height',CH).attr('rx',9).attr('fill','rgba(42,26,14,.12)');
+  cg.append('rect').attr('class','cb2').attr('width',CW).attr('height',CH).attr('rx',9)
+    .attr('fill',fill).attr('stroke',bd).attr('stroke-width',dead?1:1.5).attr('stroke-dasharray',dead?'5,3':'none');
+  if(person.gen===1||role==='root'||role==='root-spouse')cg.append('rect').attr('width',CW).attr('height',CH).attr('rx',9)
+    .attr('fill','none').attr('stroke','#b8862a').attr('stroke-width',2.5).attr('opacity',.55);
+  if(photo){
+    const cid='c_'+person.id;
+    cg.append('defs').append('clipPath').attr('id',cid).append('circle').attr('cx',18).attr('cy',CH/2).attr('r',16);
+    cg.append('image').attr('href',photo).attr('x',2).attr('y',CH/2-16).attr('width',32).attr('height',32)
+      .attr('clip-path',`url(#${cid})`).attr('preserveAspectRatio','xMidYMid slice');
+    cg.append('circle').attr('cx',18).attr('cy',CH/2).attr('r',16).attr('fill','none').attr('stroke',bd).attr('stroke-width',1);
+  }else{
+    cg.append('text').attr('x',9).attr('y',19).attr('font-size','13px').attr('fill',bd).attr('font-family','serif').text(male?'♂':'♀');
+  }
+  if(dead)cg.append('text').attr('x',CW-8).attr('y',17).attr('text-anchor','end').attr('font-size','11px').attr('fill','#9c7358').text('†');
+  const pts=splitN(person.name),nx=photo?38:CW/2,na=photo?'start':'middle';
+  cg.append('text').attr('x',nx).attr('y',pts.length>1?21:27).attr('text-anchor',na).attr('dominant-baseline','central')
+    .attr('font-family','Playfair Display,serif').attr('font-size','13px').attr('font-weight','600').attr('fill','#2a1a0e').text(pts[0]);
+  if(pts[1])cg.append('text').attr('x',nx).attr('y',34).attr('text-anchor',na).attr('dominant-baseline','central')
+    .attr('font-family','Playfair Display,serif').attr('font-size','13px').attr('font-weight','600').attr('fill','#2a1a0e').text(pts[1]);
+  const dt=person.death?`${person.birth}–${person.death}`:`sinh ${person.birth}`;
+  cg.append('text').attr('x',CW/2).attr('y',CH-10).attr('text-anchor','middle').attr('font-size','11px').attr('fill','#7a5540').text(dt);
+}
+
+function splitN(n){if(n.length<=15)return[n];const ws=n.split(' '),m=Math.ceil(ws.length/2);return[ws.slice(0,m).join(' '),ws.slice(m).join(' ')];}
+function doFit(){const bb=g.node().getBBox();if(!bb.width)return;const s=Math.min((W*.86)/bb.width,(H*.82)/bb.height,.95);fitScale=s;fitTx=W/2-(bb.x+bb.width/2)*s;fitTy=68-bb.y*s;svg.call(zoom.transform,d3.zoomIdentity.translate(fitTx,fitTy).scale(s));}
+function applyFilters(){
+  // Build map gen lookup: spouse gets same gen as their partner
+  const genMap={};
+  allPpl.forEach(p=>{
+    if(p.spouse_of){
+      const partner=allPpl.find(x=>x.id===p.spouse_of);
+      genMap[p.id]=partner?parseInt(partner.gen||0):parseInt(p.gen||0);
+    } else {
+      genMap[p.id]=parseInt(p.gen||0);
+    }
+  });
+  d3.selectAll('.node-card').each(function(){
+    const p=allPpl.find(x=>x.id===this.getAttribute('data-id'));
+    if(!p)return;
+    const gen=genMap[p.id]||0;
+    const mg=currentGenFilter===0||gen===currentGenFilter;
+    const ms=!currentSearchQ||matchP(p,currentSearchQ);
+    const visible=mg&&ms;
+    d3.select(this).transition().duration(200).attr('opacity',visible?(p.death?.58:1):.06);
+    // Keep role-based stroke color, only override when search-highlighted
+    if(ms&&currentSearchQ){
+      d3.select(this).select('.cb2').attr('stroke-width',3).attr('stroke','#b8862a');
+    } else {
+      const role=p._role||'';
+      const rc=ROLE_COLORS[role];
+      const bd=rc?rc.bd:(p.gender==='male'?'#6aaac5':'#c57a9a');
+      d3.select(this).select('.cb2').attr('stroke-width',p.death?1:1.5).attr('stroke',bd);
+    }
+  });
+}
+
+// ── BRANCH ──────────────────────────────────────────────────
+function findNodeInTree(id,n){if(!n)return null;if(n.id===id)return n;if(n.children){for(const c of n.children){const f=findNodeInTree(id,c);if(f)return f;}}return null;}
+function viewBranch(){
+  if(!currentPerson)return;
+  // Nếu là vợ/chồng lấy về, dùng node của người blood (partner)
+  const targetId=currentPerson.spouse_of||currentPerson.id;
+  const targetPerson=currentPerson.spouse_of?allPpl.find(x=>x.id===currentPerson.spouse_of):currentPerson;
+  const node=findNodeInTree(targetId,rootTree);
+  if(!node||!node.children||!node.children.length){alert('Gia đình này chưa có con cháu trong gia phả.');return;}
+  // Label hiển thị tên cả hai nếu là spouse
+  const label=currentPerson.spouse_of
+    ?`${targetPerson?targetPerson.name:''} & ${currentPerson.name}`
+    :currentPerson.name;
+  branchStack.push({data:node,label:label});
+  updateBC();closeModal();renderTree(node);
+}
+function resetToRoot(){branchStack=[];updateBC();renderTree(rootTree);}
+function updateBC(){
+  const bc=document.getElementById('breadcrumb');
+  if(!branchStack.length){bc.innerHTML=`<span class="bc-item bc-root" onclick="resetToRoot()">🏠 Toàn bộ</span>`;return;}
+  let h=`<span class="bc-item" onclick="resetToRoot()">🏠 Toàn bộ</span>`;
+  branchStack.forEach((s,i)=>{
+    h+=`<span class="bc-sep">›</span>`;
+    h+=i===branchStack.length-1?`<span class="bc-item" style="color:var(--gold2)">${s.label}</span>`:`<span class="bc-item" onclick="jumpB(${i})">${s.label}</span>`;
+  });
+  bc.innerHTML=h;
+}
+function jumpB(i){branchStack=branchStack.slice(0,i+1);updateBC();renderTree(branchStack[i].data);}
+
+// ── FILTER ──────────────────────────────────────────────────
+function filterGen(g){currentGenFilter=g;document.querySelectorAll('.gp').forEach(b=>b.classList.toggle('on',parseInt(b.dataset.g)===g));applyFilters();updateStats();if(viewMode==='list')renderListView();}
+function filterRole(r){
+  currentRoleFilter=r;
+  document.querySelectorAll('.rp').forEach(b=>b.classList.toggle('on',b.dataset.r===r));
+  renderListView();
+}
+
+// ── SEARCH ──────────────────────────────────────────────────
+function matchP(p,q){if(!p||!q)return true;const lq=q.toLowerCase();return['name','job','hometown','note'].some(k=>(p[k]||'').toLowerCase().includes(lq));}
+function hl(t,q){if(!q)return t||'';return(t||'').replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>');}
+
+document.getElementById('search-inp').addEventListener('input',function(){
+  currentSearchQ=this.value.trim();document.getElementById('sc').style.display=currentSearchQ?'block':'none';
+  showDrop(currentSearchQ);if(viewMode==='tree')applyFilters();else renderListView();
+});
+document.getElementById('search-inp').addEventListener('blur',()=>setTimeout(()=>document.getElementById('sdrop').style.display='none',200));
+function clearSearch(){document.getElementById('search-inp').value='';currentSearchQ='';document.getElementById('sc').style.display='none';document.getElementById('sdrop').style.display='none';applyFilters();if(viewMode==='list')renderListView();}
+function showDrop(q){
+  const d=document.getElementById('sdrop');
+  if(!q){d.style.display='none';return;}
+  const res=allPpl.filter(p=>matchP(p,q)).slice(0,8);
+  if(!res.length){d.style.display='none';return;}
+  d.innerHTML=res.map(p=>{
+    const m=p.gender==='male',ph=getPhoto(p.id);
+    const bg=m?'linear-gradient(135deg,#4a9abf,#2d7a9a)':'linear-gradient(135deg,#c5607a,#9a3a5a)';
+    const ini=(p.name||'').charAt((p.name||'').lastIndexOf(' ')+1)||(p.name||'').charAt(0);
+    return`<div class="sdi" onmousedown="pickRes('${p.id}')">
+      <div class="sda" style="background:${bg}">${ph?`<img src="${ph}">`:''}${ph?'':ini.toUpperCase()}</div>
+      <div><div style="font-size:13px;font-weight:500;color:var(--ink);font-family:'Playfair Display',serif">${hl(p.name,q)}</div>
+      <div style="font-size:11px;color:var(--ink3)">${GEN_NAMES[p.gen]||''} · ${p.birth||''}${p.death?' – '+p.death:''}</div></div>
+    </div>`;
+  }).join('');
+  d.style.display='block';
+}
+function pickRes(id){const p=allPpl.find(x=>x.id===id);if(p)showModal(p);document.getElementById('sdrop').style.display='none';document.getElementById('search-inp').value='';currentSearchQ='';document.getElementById('sc').style.display='none';}
+
+// ── LIST VIEW ─────────────────────────────────────────────────
+function renderListView(){
+  const grid=document.getElementById('list-grid'),empty=document.getElementById('list-empty');
+  let ppl=allPpl;
+  if(currentGenFilter>0)ppl=ppl.filter(p=>{
+    const g=p.spouse_of?parseInt((allPpl.find(x=>x.id===p.spouse_of)||{}).gen||0):parseInt(p.gen||0);
+    return g===currentGenFilter;
+  });
+  if(currentRoleFilter==='con')ppl=ppl.filter(p=>p._role==='con');
+  else if(currentRoleFilter)ppl=ppl.filter(p=>p._role===currentRoleFilter);
+  if(currentSearchQ)ppl=ppl.filter(p=>matchP(p,currentSearchQ));
+  if(!ppl.length){grid.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  if(rootTree){const order=dfsOrder(rootTree);const om={};order.forEach((id,i)=>om[id]=i);ppl=[...ppl].sort((a,b)=>(om[a.id]??999)-(om[b.id]??999));}
+  const gn=["","Đời 1","Đời 2","Đời 3","Đời 4","Đời 5","Đời 6"];
+  const roleBg={"chau-noi":"linear-gradient(135deg,#c8a000,#a07800)","chau-ngoai":"linear-gradient(135deg,#3a9a5c,#1e7a3e)","dau":"linear-gradient(135deg,#d46090,#a83468)","re":"linear-gradient(135deg,#d4782a,#a85018)"};
+  const defBg={male:"linear-gradient(135deg,#4a9abf,#2d7a9a)",female:"linear-gradient(135deg,#c5607a,#9a3a5a)"};
+  grid.innerHTML=ppl.map(p=>{
+    const ph=getPhoto(p.id),role=p._role||"";
+    const bg=roleBg[role]||defBg[p.gender]||defBg.male;
+    const ini=(p.name||"").charAt((p.name||"").lastIndexOf(" ")+1)||(p.name||"").charAt(0);
+    const rc=(["chau-noi","chau-ngoai","dau","re"].includes(role))?" role-"+role:"";
+    const rt=p._label?`<div class="lcard-role">${p._label}</div>`:"";
+    const dead=p.death?" dead":"";
+    const pid=p.id;
+    return `<div class="lcard${dead}${rc}" onclick="showModal(allPpl.find(x=>x.id===${JSON.stringify(pid)}))">
+      <div class="lcard-photo" style="background:${bg};color:#fff">${ph?`<img src="${ph}">`:""}${ph?"":ini.toUpperCase()}</div>
+      <div class="lcard-body">${rt}
+        <div class="lcard-name">${hl(p.name,currentSearchQ)}</div>
+        <div class="lcard-gen">${gn[p.gen]||""}</div>
+        <div class="lcard-meta">
+          <span>🗓 ${p.birth||""}${p.death?" – "+p.death:""}</span>
+          <span>📍 ${p.hometown||"—"}</span>
+          <span>💼 ${(p.job||"—").substring(0,32)}${(p.job||"").length>32?"…":""}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+
+// ── VIEW SWITCH ───────────────────────────────────────────────
+function switchView(mode){
+  viewMode=mode;
+  // Desktop view buttons
+  ['tree','list','xh'].forEach(t=>{
+    const b=document.getElementById('vb-'+t);
+    if(b)b.classList.toggle('on',t===mode);
+  });
+  // Mobile tab bar
+  ['tree','list','xh'].forEach(t=>{
+    const b=document.getElementById('mbt-'+t);
+    if(b)b.classList.toggle('on',t===mode);
+  });
+  document.getElementById('tree-wrap').style.display=mode==='tree'?'block':'none';
+  document.getElementById('list-wrap').style.display=mode==='list'?'block':'none';
+  document.getElementById('xh-wrap').style.display=mode==='xh'?'block':'none';
+  document.getElementById('ctrl').style.display=mode==='tree'?'flex':'none';
+  document.getElementById('legend').style.display=mode==='tree'?'block':'none';
+  if(mode==='list')renderListView();
+  if(mode==='xh')initXH();
+}
+
+// ── PHOTO (localStorage) ──────────────────────────────────────
+function getPhoto(id){try{return localStorage.getItem('gp_photo_'+id)||null;}catch(e){return null;}}
+function savePhoto(id,d){try{localStorage.setItem('gp_photo_'+id,d);}catch(e){alert('Ảnh quá lớn, thử ảnh nhỏ hơn.');}}
+function triggerPhoto(){if(currentPerson)document.getElementById('m-photo-inp').click();}
+function handlePhoto(inp){
+  if(!inp.files||!inp.files[0]||!currentPerson)return;
+  if(inp.files[0].size>2*1024*1024){alert('Ảnh tối đa 2MB');return;}
+  const r=new FileReader();
+  r.onload=e=>{
+    savePhoto(currentPerson.id,e.target.result);
+    const ava=document.getElementById('mava');let img=ava.querySelector('img');
+    if(!img){img=document.createElement('img');ava.appendChild(img);}
+    img.src=e.target.result;img.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%';
+    const cur=branchStack.length?branchStack[branchStack.length-1].data:rootTree;
+    renderTree(cur||rootTree);if(viewMode==='list')renderListView();
+  };
+  r.readAsDataURL(inp.files[0]);inp.value='';
+}
+
+// ── ÂM LỊCH — Thuật toán Hồ Ngọc Đức ────────────────────────
+const TZ=7;
+function INT(d){return Math.floor(d);}
+function jdFromDate(dd,mm,yy){
+  let a=INT((14-mm)/12),y=yy+4800-a,m=mm+12*a-3;
+  let jd=dd+INT((153*m+2)/5)+365*y+INT(y/4)-INT(y/100)+INT(y/400)-32045;
+  if(jd<2299161){jd=dd+INT((153*m+2)/5)+365*y+INT(y/4)-32083;}
+  return jd;
+}
+function jdToDate(jd){
+  let a,b,c,d,e,m;
+  if(jd>2299160){a=jd+32044;b=INT((4*a+3)/146097);c=a-INT((146097*b)/4);}
+  else{b=0;c=jd+32082;}
+  d=INT((4*c+3)/1461);e=c-INT((1461*d)/4);m=INT((5*e+2)/153);
+  const day=e-INT((153*m+2)/5)+1;
+  const month=m+3-12*INT(m/10);
+  const year=100*b+d-4800+INT(m/10);
+  return[day,month,year];
+}
+function newMoonDay(k){
+  const T=k/1236.85,T2=T*T,T3=T2*T,dr=Math.PI/180;
+  let Jd1=2415020.75933+29.53058868*k+0.0001178*T2-0.000000155*T3;
+  Jd1+=0.00033*Math.sin((166.56+132.87*T-0.009173*T2)*dr);
+  const M=359.2242+29.10535608*k-0.0000333*T2-0.00000347*T3;
+  const Mpr=306.0253+385.81691806*k+0.0107306*T2+0.00001236*T3;
+  const F=21.2964+390.67050646*k-0.0016528*T2-0.00000239*T3;
+  let C1=(0.1734-0.000393*T)*Math.sin(M*dr)+0.0021*Math.sin(2*dr*M);
+  C1-=0.4068*Math.sin(Mpr*dr)+0.0161*Math.sin(dr*2*Mpr);
+  C1-=0.0004*Math.sin(dr*3*Mpr)+0.0104*Math.sin(dr*2*F);
+  C1-=0.0051*Math.sin(dr*(M+Mpr))+0.0074*Math.sin(dr*(M-Mpr));
+  C1+=0.0004*Math.sin(dr*(2*F+M))-0.0004*Math.sin(dr*(2*F-M));
+  C1-=0.0006*Math.sin(dr*(2*F+Mpr))+0.0010*Math.sin(dr*(2*F-Mpr));
+  C1+=0.0005*Math.sin(dr*(M+2*Mpr));
+  let deltat;
+  if(T<-11)deltat=0.001+0.000839*T+0.0002261*T2-0.00000845*T3-0.000000081*T*T3;
+  else deltat=-0.000278+0.000265*T+0.000262*T2;
+  return INT(Jd1+C1-deltat+0.5+TZ/24);
+}
+function sunLongitude(jdn){
+  const T=(jdn-2451545.0)/36525,T2=T*T,dr=Math.PI/180;
+  let DL=0,L0=280.46645+36000.76983*T+0.0003032*T2;
+  let M=357.52910+35999.05030*T-0.0001559*T2-0.00000048*T*T2;
+  let C=(1.9146-0.004817*T-0.000014*T2)*Math.sin(dr*M);
+  C+=(0.019993-0.000101*T)*Math.sin(dr*2*M)+0.00029*Math.sin(dr*3*M);
+  let sun=L0+C;
+  let omega=125.04-1934.136*T;
+  sun-=0.00569-0.00478*Math.sin(dr*omega);
+  sun=sun*dr;sun=sun-Math.PI*2*INT(sun/(Math.PI*2));
+  return INT(sun/(Math.PI/6));
+}
+function getLunarMonth11(yy){
+  const off=jdFromDate(31,12,yy)-2415021;
+  let k=INT(off/29.530588853),nm=newMoonDay(k);
+  const sunLng=sunLongitude(nm);
+  if(sunLng>=9)nm=newMoonDay(k-1);
+  return nm;
+}
+function getLeapMonthOffset(a11){
+  let k=INT((a11-2415021.076998695)/29.530588853+0.5);
+  let last=0,i=1,arc=sunLongitude(newMoonDay(k+i));
+  do{last=arc;i++;arc=sunLongitude(newMoonDay(k+i));
+  }while(arc!==last&&i<14);
+  return i-1;
+}
+function solarToLunar(dd,mm,yy){
+  const dayNumber=jdFromDate(dd,mm,yy);
+  let k=INT((dayNumber-2415021.076998695)/29.530588853);
+  let monthStart=newMoonDay(k+1);
+  if(monthStart>dayNumber)monthStart=newMoonDay(k);
+  let a11=getLunarMonth11(yy),b11;
+  if(a11>=monthStart){b11=getLunarMonth11(yy-1);a11=b11;}
+  else b11=getLunarMonth11(yy+1);
+  const lunarDay=dayNumber-monthStart+1;
+  const diff=INT((monthStart-a11)/29);
+  let lunarLeap=0,lunarMonth=diff+11;
+  if(b11-a11>365){
+    const leapMonthDiff=getLeapMonthOffset(a11);
+    if(diff>=leapMonthDiff){lunarMonth=diff+10;if(diff===leapMonthDiff)lunarLeap=1;}
+  }
+  if(lunarMonth>12)lunarMonth-=12;
+  let lunarYear=yy;
+  if(lunarMonth>=11&&diff<4)lunarYear--;
+  else if(lunarMonth<=3&&diff>=9)lunarYear++;
+  return{day:lunarDay,month:lunarMonth,year:lunarYear,leap:lunarLeap};
+}
+
+// Convert "DD/MM/YYYY" string → formatted string dương lịch + âm lịch
+const CAN=["Giáp","Ất","Bính","Đinh","Mậu","Kỷ","Canh","Tân","Nhâm","Quý"];
+const CHI=["Tý","Sửu","Dần","Mão","Thìn","Tỵ","Ngọ","Mùi","Thân","Dậu","Tuất","Hợi"];
+function canChi(y){return CAN[(y+6)%10]+' '+CHI[(y+8)%12];}
+function formatLunar(l){
+  if(!l)return'';
+  const leap=l.leap?'(nhuận)':'';
+  return`${l.day}/${l.month}${leap}/${l.year} (${canChi(l.year)})`;
+}
+function parseDateStr(s){
+  if(!s)return null;
+  s=s.trim();
+  // Year only: "1950"
+  if(/^\d{4}$/.test(s)){const y=Number(s);return(y>1900&&y<2200)?{d:null,m:null,y}:null;}
+  // Full date: DD/MM/YYYY or YYYY/MM/DD or with - or .
+  const p=s.split(/[\/\-\.]/);
+  if(p.length!==3)return null;
+  const[a,b,c]=p.map(Number);
+  if(c>1900&&c<2200)return{d:a,m:b,y:c};
+  if(a>1900&&a<2200)return{d:c,m:b,y:a};
+  return null;
+}
+function extractYear(s){
+  const p=parseDateStr(s);return p?String(p.y):null;
+}
+// Chạy sau khi fetch: tự suy birth và death từ birth_date và death_date
+function normalizeRows(rows){
+  const genderMap={'male':'male','female':'female','nam':'male','nu':'female','nữ':'female','m':'male','f':'female','1':'male','0':'female'};
+  rows.forEach(r=>{
+    r.birth=extractYear(r.birth_date)||r.birth||null;
+    r.death=extractYear(r.death_date)||r.death||null;
+    // Normalize gender: 'Male','NAM','Nam','m' ... → 'male'/'female'
+    const g=(r.gender||'').toString().trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d');
+    r.gender=genderMap[g]||'female';
+    // Trim whitespace from id/parent_id/spouse_of
+    if(r.id)r.id=r.id.toString().trim();
+    if(r.parent_id)r.parent_id=r.parent_id.toString().trim();
+    if(r.spouse_of)r.spouse_of=r.spouse_of.toString().trim();
+    if(r.co_parent_id)r.co_parent_id=r.co_parent_id.toString().trim();
+  });
+  computeRoles(rows);
+  return rows;
+}
+
+// Tag mỗi người với _role và _label dựa vào quan hệ trong cây
+function computeRoles(rows){
+  const map={};rows.forEach(r=>map[r.id]=r);
+
+  // Blood root = không có parent_id, không có spouse_of
+  const bloodRoots=rows.filter(r=>!r.parent_id&&!r.spouse_of);
+  const rootId=bloodRoots.length?bloodRoots[0].id:null;
+
+  // Con đời 2 của root = có parent_id === rootId (blood)
+  // Cũng xét con của root-spouses — parent_id vẫn phải là rootId
+  const gen2BloodIds=new Set(rows.filter(r=>r.parent_id===rootId&&!r.spouse_of).map(r=>r.id));
+
+  // Tìm gen=2 blood ancestor của r bằng cách đi ngược parent_id
+  // Trả về id của người con đời 2 mà r thuộc nhánh đó
+  function findGen2Branch(r){
+    let cur=r;
+    while(cur&&cur.parent_id){
+      if(gen2BloodIds.has(cur.id))return cur; // chính cur là đời 2
+      const par=map[cur.parent_id];
+      if(!par)return null;
+      cur=par;
+    }
+    // Nếu cur là root thì không có gen2 branch
+    return null;
+  }
+
+  rows.forEach(r=>{
+    r._role='other';r._label='';
+
+    // Blood root (ông hoặc bà tổ nếu bà là người blood đứng đầu)
+    if(!r.parent_id&&!r.spouse_of){
+      r._role='root';
+      r._label=r.gender==='male'?'Ông tổ':'Bà tổ';
+      return;
+    }
+
+    // Người có spouse_of → dâu hoặc rể hoặc bà/ông tổ
+    if(r.spouse_of){
+      const target=map[r.spouse_of];
+      if(!target)return;
+      // Spouse của root = ông/bà tổ
+      if(r.spouse_of===rootId||(!target.parent_id&&!target.spouse_of)){
+        r._role='root-spouse';
+        r._label=r.gender==='male'?'Ông tổ':'Bà tổ';
+        return;
+      }
+      // Dâu = nữ lấy con trai nhà này (con trai có blood)
+      // Rể = nam lấy con gái nhà này (con gái có blood)
+      r._role=r.gender==='female'?'dau':'re';
+      r._label=r.gender==='female'?'Dâu':'Rể';
+      return;
+    }
+
+    // Blood người có parent_id
+    if(r.parent_id){
+      // Con trực tiếp của root → đời 2
+      if(r.parent_id===rootId){
+        r._role='con';
+        r._label=r.gender==='male'?'Con trai':'Con gái';
+        return;
+      }
+      // Đời 3+ → tìm nhánh gen=2 để xác định nội/ngoại
+      // Rule: nhánh đến từ CON TRAI của ông → cháu nội
+      //       nhánh đến từ CON GÁI của ông → cháu ngoại
+      const g2=findGen2Branch(r);
+      if(!g2){r._role='blood';return;}
+      r._role=g2.gender==='male'?'chau-noi':'chau-ngoai';
+      r._label=g2.gender==='male'?'Cháu nội':'Cháu ngoại';
+    }
+  });
+}
+
+// DFS traversal của cây → trả về array theo thứ tự vai vế
+function dfsOrder(node,result=[]){
+  if(!node)return result;
+  result.push(node.id);
+  // Push tất cả spouses
+  (node.spouses||[]).forEach(sp=>result.push(sp.id));
+  if(node.children)node.children.forEach(c=>dfsOrder(c,result));
+  return result;
+}
+function formatSolar(s){
+  if(!s)return'';
+  const p=parseDateStr(s);
+  if(!p)return s;
+  if(p.d===null)return String(p.y);
+  return`${String(p.d).padStart(2,'0')}/${String(p.m).padStart(2,'0')}/${p.y}`;
+}
+function getDateBlock(dateStr,labelSolar,labelLunar){
+  if(!dateStr)return[{l:labelSolar,v:'—'},{l:labelLunar,v:'—'}];
+  const p=parseDateStr(dateStr);
+  if(!p)return[{l:labelSolar,v:dateStr},{l:labelLunar,v:'—'}];
+  // Year only — chỉ hiện năm, không convert âm lịch
+  if(p.d===null)return[{l:labelSolar,v:String(p.y)},{l:labelLunar,v:'(chỉ biết năm)'}];
+  let lunar='';
+  try{const l=solarToLunar(p.d,p.m,p.y);lunar=formatLunar(l);}catch(e){}
+  return[{l:labelSolar,v:formatSolar(dateStr)},{l:labelLunar,v:lunar||'—'}];
+}
+
+// ── STATS ─────────────────────────────────────────────────────
+function updateStats(){
+  // Build genMap for spouse gen lookup
+  const genMap={};
+  allPpl.forEach(p=>{
+    if(p.spouse_of){const partner=allPpl.find(x=>x.id===p.spouse_of);genMap[p.id]=partner?parseInt(partner.gen||0):parseInt(p.gen||0);}
+    else genMap[p.id]=parseInt(p.gen||0);
+  });
+  let ppl=allPpl;
+  if(currentGenFilter>0)ppl=allPpl.filter(p=>(genMap[p.id]||0)===currentGenFilter);
+  const alive=ppl.filter(p=>!p.death).length;
+  const label=currentGenFilter>0?` (Đời ${currentGenFilter})`:'';
+  document.getElementById('stats').innerHTML=
+    `<b>${ppl.length}</b> thành viên${label} · <b>${alive}</b> còn sống · <b>${ppl.length-alive}</b> đã mất
+    <button class="sync-btn" onclick="loadData(true)" title="Tải lại từ Sheet">↻</button>`;
+}
+
+// ── MODAL ──────────────────────────────────────────────────────
+function showModal(p){
+  if(!p)return;currentPerson=p;
+  const male=p.gender==='male',dead=!!p.death,ph=getPhoto(p.id);
+  const ava=document.getElementById('mava');ava.innerHTML='';
+  ava.style.background=male?'linear-gradient(135deg,#4a9abf,#2d7a9a)':'linear-gradient(135deg,#c5607a,#9a3a5a)';
+  const ini=(p.name||'').charAt((p.name||'').lastIndexOf(' ')+1)||(p.name||'').charAt(0);
+  if(ph){const img=document.createElement('img');img.src=ph;img.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%';ava.appendChild(img);}
+  else{const sp=document.createElement('span');sp.textContent=ini.toUpperCase();sp.style.cssText='position:relative;color:#fff;font-size:26px;font-family:Playfair Display,serif;font-weight:700';ava.appendChild(sp);}
+  document.getElementById('mname').innerHTML=(p.name||'')+(dead?` <span style="font-size:11px;background:rgba(42,26,14,.12);color:#7a5540;padding:2px 7px;border-radius:10px;font-family:Lora,serif;font-weight:400">Đã mất</span>`:'');
+  document.getElementById('mgen').textContent=GEN_NAMES[p.gen]||'';
+  const birthBlk=getDateBlock(p.birth_date,'Ngày sinh (DL)','Ngày sinh (ÂL)');
+  const deathBlk=p.death_date?getDateBlock(p.death_date,'Ngày mất (DL)','Ngày mất (ÂL)'):[];
+  const _rows=[...birthBlk,...deathBlk,{l:'Quê quán',v:p.hometown||'—'},{l:'Nghề nghiệp',v:p.job||'—'}];
+  document.getElementById('minfo').innerHTML=_rows.filter(x=>x.l).map(x=>`<div class="mi"><label>${x.l}</label><span>${x.v}</span></div>`).join('');
+  document.getElementById('mnote').textContent=p.note||'Chưa có ghi chú.';
+  const node=findNodeInTree(p.id,rootTree);
+  // Show branch button: blood node with children, OR spouse of someone with children
+  const bloodNodeForBranch=p.spouse_of?findNodeInTree(p.spouse_of,rootTree):node;
+  document.getElementById('mbranch').style.display=
+    (bloodNodeForBranch&&bloodNodeForBranch.children&&bloodNodeForBranch.children.length)?'':'none';
+  document.getElementById('rform').style.display='none';
+  document.getElementById('rf-name').value='';document.getElementById('rf-content').value='';document.getElementById('rf-email').value='';
+  document.getElementById('mover').classList.add('on');
+}
+function closeModal(){document.getElementById('mover').classList.remove('on');}
+document.getElementById('mcls').addEventListener('click',closeModal);
+document.getElementById('mover').addEventListener('click',e=>{if(e.target===document.getElementById('mover'))closeModal();});
+function toggleReq(){const f=document.getElementById('rform');f.style.display=f.style.display==='block'?'none':'block';}
+
+// ── SUBMIT REQUEST → APPS SCRIPT ──────────────────────────────
+async function submitReq(){
+  const nm=document.getElementById('rf-name').value.trim();
+  const ct=document.getElementById('rf-content').value.trim();
+  if(!nm||!ct){alert('Vui lòng điền họ tên và nội dung chỉnh sửa.');return;}
+  const btn=document.getElementById('rsend');
+  btn.disabled=true;btn.textContent='Đang gửi…';
+  try{
+    await fetch(SCRIPT_URL,{
+      method:'POST',
+      body:JSON.stringify({
+        personId:currentPerson?.id||'',
+        personName:currentPerson?.name||'',
+        name:nm,
+        email:document.getElementById('rf-email').value.trim(),
+        content:ct
+      })
+    });
+    alert(`✅ Đã gửi yêu cầu!\nNgười quản lý sẽ xem xét và cập nhật trên Google Sheet.`);
+    document.getElementById('rform').style.display='none';
+    document.getElementById('rf-name').value='';document.getElementById('rf-content').value='';document.getElementById('rf-email').value='';
+  }catch(err){
+    alert('Gửi thất bại: '+err.message);
+  }
+  btn.disabled=false;btn.textContent='Gửi yêu cầu';
+}
+
+// ── CONTROLS ──────────────────────────────────────────────────
+document.getElementById('bZI').addEventListener('click',()=>svg.transition().duration(260).call(zoom.scaleBy,1.45));
+document.getElementById('bZO').addEventListener('click',()=>svg.transition().duration(260).call(zoom.scaleBy,.7));
+document.getElementById('bFit').addEventListener('click',()=>svg.transition().duration(360).call(zoom.transform,d3.zoomIdentity.translate(fitTx,fitTy).scale(fitScale)));
+setTimeout(()=>document.getElementById('hint').classList.add('gone'),5500);
+window.addEventListener('resize',()=>{W=treeWrap.clientWidth;H=treeWrap.clientHeight;svg.attr('width',W).attr('height',H);doFit();});
+
+
+// ── XƯNG HÔ ───────────────────────────────────────────────────
+// Xây dựng quan hệ giữa 2 người dựa vào cây, trả về cách gọi
+
+function initXH(){
+  const sel1=document.getElementById('xh-me');
+  const sel2=document.getElementById('xh-them');
+  if(sel1.options.length>1)return; // đã init rồi
+  const order=rootTree?dfsOrder(rootTree):[];
+  const om={};order.forEach((id,i)=>om[id]=i);
+  const sorted=[...allPpl].sort((a,b)=>(om[a.id]??999)-(om[b.id]??999));
+  sorted.forEach(p=>{
+    const o1=new Option(p.name,p.id);
+    const o2=new Option(p.name,p.id);
+    sel1.add(o1);sel2.add(o2);
+  });
+}
+
+function swapXH(){
+  const s1=document.getElementById('xh-me');
+  const s2=document.getElementById('xh-them');
+  const v1=s1.value,v2=s2.value;
+  s1.value=v2;s2.value=v1;
+  calcXH();
+}
+
+// Tìm path từ root đến node id trong cây (chỉ qua blood line)
+function pathToRoot(id,node,path=[]){
+  if(!node)return null;
+  path=[...path,node];
+  if(node.id===id)return path;
+  if(node.children){
+    for(const c of node.children){
+      const res=pathToRoot(id,c,path);
+      if(res)return res;
+    }
+  }
+  return null;
+}
+
+// Lấy blood id của 1 người (nếu là spouse thì trả về spouse_of)
+function bloodId(p){return p.spouse_of||p.id;}
+
+// Tìm LCA (lowest common ancestor) trong cây máu
+function findLCA(id1,id2){
+  const p1=pathToRoot(bloodId(allPpl.find(x=>x.id===id1)||{}),rootTree)||[];
+  const p2=pathToRoot(bloodId(allPpl.find(x=>x.id===id2)||{}),rootTree)||[];
+  const set1=new Set(p1.map(n=>n.id));
+  for(const n of p2){if(set1.has(n.id))return n;}
+  return null;
+}
+
+function calcXH(){
+  const meId=document.getElementById('xh-me').value;
+  const themId=document.getElementById('xh-them').value;
+  const termEl=document.getElementById('xh-term');
+  const callEl=document.getElementById('xh-call');
+  const expEl=document.getElementById('xh-explain');
+  const swapBtn=document.getElementById('xh-swap');
+
+  if(!meId||!themId){
+    termEl.style.fontSize='18px';termEl.style.fontWeight='400';termEl.style.color='var(--ink3)';
+    termEl.textContent='Chọn hai người ở trên';
+    callEl.textContent='';expEl.textContent='';swapBtn.style.display='none';return;
+  }
+  if(meId===themId){
+    termEl.style.fontSize='22px';termEl.style.fontWeight='600';termEl.style.color='var(--ink)';
+    termEl.textContent='Đó là chính bạn';
+    callEl.textContent='';expEl.textContent='';swapBtn.style.display='none';return;
+  }
+
+  const me=allPpl.find(x=>x.id===meId);
+  const them=allPpl.find(x=>x.id===themId);
+  if(!me||!them)return;
+
+  const result=computeXungHo(me,them);
+  termEl.style.fontSize='38px';termEl.style.fontWeight='700';termEl.style.color='var(--ink)';
+  termEl.textContent=result.term;
+  callEl.textContent=result.call?'Bạn gọi là "'+result.term+'" · Xưng là "'+result.call+'"':'';
+  expEl.textContent=result.explain||'';
+  swapBtn.style.display='inline-block';
+}
+
+function computeXungHo(me,them){
+  const map={};allPpl.forEach(r=>map[r.id]=r);
+  const meBloodId=me.spouse_of||me.id;
+  const themBloodId=them.spouse_of||them.id;
+  const meIsSpouse=!!me.spouse_of;
+  const themIsSpouse=!!them.spouse_of;
+  const meG=me.gender;
+  const themG=them.gender;
+
+  // ── Vợ/chồng trực tiếp: kiểm tra TRƯỚC khi tính LCA ──
+  // me gọi them là vợ/chồng
+  if(them.spouse_of===me.id || me.spouse_of===them.id){
+    if(themG==='male')return{term:'Chồng',call:'Vợ',explain:'Đây là chồng của bạn.'};
+    else return{term:'Vợ',call:'Chồng',explain:'Đây là vợ của bạn.'};
+  }
+  // Cả hai cùng là vợ/chồng của cùng một người (bạn bè đồng hội)
+  if(meIsSpouse&&themIsSpouse&&meBloodId===themBloodId){
+    return{term:'(Cùng hôn phối)',call:'',explain:'Hai người cùng là vợ/chồng của một người.'};
+  }
+
+  // ── Tính đường đi trong cây máu ──
+  const pathMe=pathToRoot(meBloodId,rootTree)||[];
+  const pathThem=pathToRoot(themBloodId,rootTree)||[];
+  if(!pathMe.length||!pathThem.length)
+    return{term:'Không xác định',call:'',explain:'Một trong hai người không thuộc cây máu trong gia phả.'};
+
+  const depthMe=pathMe.length-1;
+  const depthThem=pathThem.length-1;
+
+  // ── LCA: duyệt từ CUỐI pathThem (ancestor gần nhất) ──
+  const setMe=new Set(pathMe.map(n=>n.id));
+  let lca=null,lcaDepthInMe=0,lcaDepthInThem=0;
+  for(let i=pathThem.length-1;i>=0;i--){
+    if(setMe.has(pathThem[i].id)){
+      lca=pathThem[i];
+      lcaDepthInMe=pathMe.findIndex(n=>n.id===lca.id);
+      lcaDepthInThem=i;
+      break;
+    }
+  }
+  if(!lca)return{term:'Không xác định',call:'',explain:'Hai người không có tổ tiên chung trong gia phả này.'};
+
+  const upMe=depthMe-lcaDepthInMe;      // me đi lên bao nhiêu bậc đến LCA
+  const downThem=depthThem-lcaDepthInThem; // them đi xuống bao nhiêu bậc từ LCA
+
+  // ── Helper: gender của con của LCA trên đường đến toId ──
+  function nextAfterLCA(lcaId,path){
+    const idx=path.findIndex(n=>n.id===lcaId);
+    if(idx<0||idx>=path.length-1)return null;
+    return path[idx+1];
+  }
+  // Cha/mẹ ruột của me (node ngay trên me trong pathMe)
+  const meParent=pathMe[depthMe-1]||null;
+  const meParentG=meParent?meParent.gender:null;
+
+  // ── Vợ/chồng của người có quan hệ máu (dâu rể theo vai) ──
+  // Nếu them là spouse, tính theo blood target của them
+  function spouseLabel(bloodRelTerm,bloodRelG,spouseG){
+    // bloodRelTerm là quan hệ của người máu: cha→cha dượng, mẹ→mẹ kế, chú→thím, cô→dượng...
+    if(bloodRelTerm==='Cha / Ba'){return spouseG==='male'?{term:'Cha dượng',call:'Con'}:{term:'Mẹ kế',call:'Con'};}
+    if(bloodRelTerm==='Mẹ / Má'){return spouseG==='male'?{term:'Cha dượng',call:'Con'}:{term:'Mẹ kế',call:'Con'};}
+    if(bloodRelTerm==='Ông'){return spouseG==='female'?{term:'Bà',call:'Cháu'}:{term:'Ông',call:'Cháu'};}
+    if(bloodRelTerm==='Bà'){return spouseG==='male'?{term:'Ông',call:'Cháu'}:{term:'Bà',call:'Cháu'};}
+    if(bloodRelTerm==='Chú'){return {term:spouseG==='female'?'Thím':'Chú',call:'Cháu'};}
+    if(bloodRelTerm==='Bác'){return {term:spouseG==='female'?'Bác gái':'Bác',call:'Cháu'};}
+    if(bloodRelTerm==='Cô'){return {term:spouseG==='male'?'Dượng':'Cô',call:'Cháu'};}
+    if(bloodRelTerm==='Cậu'){return {term:spouseG==='female'?'Mợ':'Cậu',call:'Cháu'};}
+    if(bloodRelTerm==='Dì'){return {term:spouseG==='male'?'Dượng':'Dì',call:'Cháu'};}
+    return null;
+  }
+
+  // ── Tính quan hệ BLOOD ──────────────────────────────────────────
+  // u = upMe (số bậc me đi lên đến LCA)
+  // d = downThem (số bậc them đi xuống từ LCA)
+  function bloodRel(u,d){
+
+    // helper: older = me sinh trước them?
+    const myB=parseInt(me.birth)||0,thB=parseInt(them.birth)||0;
+    const meOlder=myB>0&&thB>0?myB<=thB:true;
+    const olderThem=!meOlder; // them sinh trước me
+
+    // Cùng người
+    if(u===0&&d===0)return{term:'(Cùng người)',call:''};
+
+    // ── ĐƯỜNG THẲNG ĐI LÊN (them là tổ tiên của me) ──
+    if(d===0){
+      if(u===1){return themG==='male'?{term:'Ba / Cha',call:'Con',explain:'Đây là ba của bạn.'}:{term:'Mẹ / Má',call:'Con',explain:'Đây là mẹ của bạn.'};}
+      if(u===2){return themG==='male'?{term:'Ông',call:'Cháu',explain:'Đây là ông của bạn.'}:{term:'Bà',call:'Cháu',explain:'Đây là bà của bạn.'};}
+      if(u===3){return themG==='male'?{term:'Cụ / Cố',call:'Chắt',explain:'Đây là cụ ông của bạn.'}:{term:'Cụ / Cố',call:'Chắt',explain:'Đây là cụ bà của bạn.'};}
+      if(u===4){return themG==='male'?{term:'Kỵ',call:'Chút',explain:'Đây là kỵ ông của bạn.'}:{term:'Kỵ',call:'Chút',explain:'Đây là kỵ bà của bạn.'};}
+      if(u===5){return themG==='male'?{term:'Tổ / Sơ',call:'Chít',explain:'Đây là tổ tiên 5 đời của bạn.'}:{term:'Tổ / Sơ',call:'Chít',explain:'Đây là tổ tiên 5 đời của bạn.'};}
+      return themG==='male'?{term:'Tổ tiên',call:'Hậu duệ',explain:`Tổ tiên cách ${u} đời của bạn.`}:{term:'Tổ tiên',call:'Hậu duệ',explain:`Tổ tiên cách ${u} đời của bạn.`};
+    }
+
+    // ── ĐƯỜNG THẲNG ĐI XUỐNG (them là hậu duệ của me) ──
+    if(u===0){
+      if(d===1){return themG==='male'?{term:'Con trai',call:'Ba/Má',explain:'Đây là con trai của bạn.'}:{term:'Con gái',call:'Ba/Má',explain:'Đây là con gái của bạn.'};}
+      if(d===2){return themG==='male'?{term:'Cháu trai',call:'Ông/Bà',explain:'Đây là cháu trai của bạn.'}:{term:'Cháu gái',call:'Ông/Bà',explain:'Đây là cháu gái của bạn.'};}
+      if(d===3){return themG==='male'?{term:'Chắt trai',call:'Cụ/Cố',explain:'Đây là chắt trai của bạn.'}:{term:'Chắt gái',call:'Cụ/Cố',explain:'Đây là chắt gái của bạn.'};}
+      if(d===4){return themG==='male'?{term:'Chút trai',call:'Kỵ',explain:'Đây là chút trai của bạn.'}:{term:'Chút gái',call:'Kỵ',explain:'Đây là chút gái của bạn.'};}
+      if(d===5){return themG==='male'?{term:'Chít trai',call:'Tổ/Sơ',explain:'Đây là chít của bạn.'}:{term:'Chít gái',call:'Tổ/Sơ',explain:'Đây là chít của bạn.'};}
+      return themG==='male'?{term:'Hậu duệ',call:'Tổ tiên',explain:`Hậu duệ cách ${d} đời.`}:{term:'Hậu duệ',call:'Tổ tiên',explain:`Hậu duệ cách ${d} đời.`};
+    }
+
+    // ── CÙNG ĐỜI (u === d) ──
+    if(u===d){
+      const brMe=nextAfterLCA(lca.id,pathMe);
+      const brThem=nextAfterLCA(lca.id,pathThem);
+      const noiNgoai=brMe&&brThem?(brMe.gender===brThem.gender?(brMe.gender==='male'?'nội':'ngoại'):'con cô con cậu'):'';
+
+      if(u===1){
+        // Anh chị em ruột (cùng cha mẹ) hay nửa ruột (khác cha/mẹ)
+        const myP=pathMe[depthMe-1],thP=pathThem[depthThem-1];
+        const ruot=myP&&thP&&myP.id===thP.id;
+        const suffix=ruot?'ruột':'cùng cha khác mẹ / cùng mẹ khác cha';
+        if(themG==='male'){
+          return meOlder?{term:'Em trai',call:'Anh',explain:`Em trai ${suffix} của bạn.`}:{term:'Anh',call:'Em',explain:`Anh ${suffix} của bạn.`};
+        } else {
+          return meOlder?{term:'Em gái',call:'Chị',explain:`Em gái ${suffix} của bạn.`}:{term:'Chị',call:'Em',explain:`Chị ${suffix} của bạn.`};
+        }
+      }
+      if(u===2){
+        // Anh chị em họ (cùng ông bà)
+        const loai=noiNgoai?`họ ${noiNgoai}`:'họ xa';
+        if(themG==='male'){
+          return meOlder?{term:'Em họ',call:'Anh',explain:`Em trai ${loai} của bạn.`}:{term:'Anh họ',call:'Em',explain:`Anh ${loai} của bạn.`};
+        } else {
+          return meOlder?{term:'Em họ',call:'Chị',explain:`Em gái ${loai} của bạn.`}:{term:'Chị họ',call:'Em',explain:`Chị ${loai} của bạn.`};
+        }
+      }
+      if(u===3){
+        // Cùng cụ → "Chú bác cô họ xa" hay gọi anh em cho tiện
+        if(themG==='male'){
+          return meOlder?{term:'Em (họ xa)',call:'Anh',explain:'Anh em cùng cụ (họ xa).'}: {term:'Anh (họ xa)',call:'Em',explain:'Anh em cùng cụ (họ xa).'};
+        } else {
+          return meOlder?{term:'Em (họ xa)',call:'Chị',explain:'Chị em cùng cụ (họ xa).'}:{term:'Chị (họ xa)',call:'Em',explain:'Chị em cùng cụ (họ xa).'};
+        }
+      }
+      // u>=4: cùng đời nhưng rất xa
+      if(themG==='male'){
+        return meOlder?{term:'Em (họ xa)',call:'Anh',explain:`Anh em cùng tổ ${u} đời.`}:{term:'Anh (họ xa)',call:'Em',explain:`Anh em cùng tổ ${u} đời.`};
+      } else {
+        return meOlder?{term:'Em (họ xa)',call:'Chị',explain:`Chị em cùng tổ ${u} đời.`}:{term:'Chị (họ xa)',call:'Em',explain:`Chị em cùng tổ ${u} đời.`};
+      }
+    }
+
+    // ── XIÊN: them cao hơn me (u > d) — them là bậc trên của me ──
+    if(u>d){
+      // Khoảng cách so với cha mẹ me: diff = u - d
+      const diff=u-d;
+      // Them ở đời trên me bao nhiêu bậc thực tế?
+      // diff=1 → cùng đời cha mẹ me (chú/bác/cô/cậu/dì)
+      // diff=2 → cùng đời ông bà me (ông/bà)
+      // diff=3 → cùng đời cụ me → cụ
+      if(diff===1){
+        // Chú/Bác/Cô/Cậu/Dì — xem bên nội hay ngoại
+        const pG=meParentG;
+        if(pG==='male'){
+          // Bên nội
+          const pBirth=parseInt(meParent?meParent.birth:0)||0;
+          const tBirth=parseInt(map[themBloodId]?map[themBloodId].birth:them.birth)||0;
+          const pOlder=pBirth>0&&tBirth>0?pBirth<=tBirth:false;
+          if(themG==='male'){
+            return pOlder?{term:'Chú',call:'Cháu',explain:'Em trai của cha bạn (bên nội).'}:{term:'Bác',call:'Cháu',explain:'Anh của cha bạn (bên nội).'};
+          }
+          return{term:'Cô',call:'Cháu',explain:'Chị/em gái của cha bạn (bên nội).'};
+        } else {
+          if(themG==='male')return{term:'Cậu',call:'Cháu',explain:'Anh/em trai của mẹ bạn (bên ngoại).'};
+          return{term:'Dì',call:'Cháu',explain:'Chị/em gái của mẹ bạn (bên ngoại).'};
+        }
+      }
+      if(diff===2){
+        return themG==='male'?{term:'Ông',call:'Cháu',explain:`Ông họ xa của bạn (cùng đời ông bà).`}:{term:'Bà',call:'Cháu',explain:`Bà họ xa của bạn (cùng đời ông bà).`};
+      }
+      if(diff===3){
+        return themG==='male'?{term:'Cụ / Cố',call:'Cháu/Chắt',explain:`Cụ họ xa của bạn.`}:{term:'Cụ / Cố',call:'Cháu/Chắt',explain:`Cụ họ xa của bạn.`};
+      }
+      if(diff===4){
+        return themG==='male'?{term:'Kỵ',call:'Chắt/Chút',explain:'Kỵ họ xa của bạn.'}:{term:'Kỵ',call:'Chắt/Chút',explain:'Kỵ họ xa của bạn.'};
+      }
+      return themG==='male'?{term:'Tổ tiên',call:'Hậu duệ',explain:`Tổ tiên họ xa cách ${diff} bậc.`}:{term:'Tổ tiên',call:'Hậu duệ',explain:`Tổ tiên họ xa cách ${diff} bậc.`};
+    }
+
+    // ── XIÊN: them thấp hơn me (d > u) — them là bậc dưới của me ──
+    if(d>u){
+      const diff=d-u;
+      if(diff===1){
+        // Cháu của anh em = con của chú/bác/cô/cậu/dì
+        return themG==='male'?{term:'Cháu trai',call:meG==='male'?'Chú/Bác/Cậu':'Cô/Dì',explain:'Cháu trai họ của bạn.'}:{term:'Cháu gái',call:meG==='male'?'Chú/Bác/Cậu':'Cô/Dì',explain:'Cháu gái họ của bạn.'};
+      }
+      if(diff===2){
+        return themG==='male'?{term:'Cháu trai',call:'Ông/Bà',explain:'Cháu trai họ xa của bạn.'}:{term:'Cháu gái',call:'Ông/Bà',explain:'Cháu gái họ xa của bạn.'};
+      }
+      if(diff===3){
+        return themG==='male'?{term:'Chắt trai',call:'Cụ/Cố',explain:'Chắt họ xa của bạn.'}:{term:'Chắt gái',call:'Cụ/Cố',explain:'Chắt họ xa của bạn.'};
+      }
+      if(diff===4){
+        return themG==='male'?{term:'Chút trai',call:'Kỵ',explain:'Chút họ xa của bạn.'}:{term:'Chút gái',call:'Kỵ',explain:'Chút họ xa của bạn.'};
+      }
+      return themG==='male'?{term:'Hậu duệ',call:'Tổ tiên',explain:`Hậu duệ họ xa cách ${diff} bậc.`}:{term:'Hậu duệ',call:'Tổ tiên',explain:`Hậu duệ họ xa cách ${diff} bậc.`};
+    }
+
+    return{term:'Họ hàng xa',call:'',explain:'Hai người có cùng tổ tiên nhưng quan hệ xa.'};
+  }
+
+  // Tính quan hệ blood trước
+  const rel=bloodRel(upMe,downThem);
+
+  // Nếu them là spouse, điều chỉnh cách gọi
+  if(themIsSpouse&&rel){
+    const adj=spouseLabel(rel.term,themBloodId&&map[themBloodId]?map[themBloodId].gender:'male',themG);
+    if(adj)return Object.assign({},rel,adj,{explain:(rel.explain||'')+(adj.term!==rel.term?' (vợ/chồng của người máu)':'')});
+  }
+
+  return rel||{term:'Không xác định',call:'',explain:'Chưa xác định được quan hệ.'};
+}
+
+// ── MOBILE NAVIGATION ─────────────────────────────────────────
+
+function isMobile(){return window.innerWidth<=640;}
+
+// Tab switching (mobile bottom bar)
+function mobTab(mode){
+  if(mode==='search'){openMobSearch();return;}
+  switchView(mode);
+}
+
+// Mobile search sheet
+function openMobSearch(){
+  document.getElementById('mob-search').classList.add('open');
+  document.getElementById('mob-search-inp').focus();
+}
+function closeMobSearch(){
+  document.getElementById('mob-search').classList.remove('open');
+  document.getElementById('mob-search-inp').value='';
+  document.getElementById('mob-sdrop').style.display='none';
+  document.getElementById('mob-sdrop').innerHTML='';
+}
+
+document.getElementById('mob-search-inp').addEventListener('input',function(){
+  const q=this.value.trim();
+  if(!q){document.getElementById('mob-sdrop').style.display='none';return;}
+  const res=allPpl.filter(p=>matchP(p,q)).slice(0,12);
+  if(!res.length){document.getElementById('mob-sdrop').style.display='none';return;}
+  const gn=["","Đời 1","Đời 2","Đời 3","Đời 4","Đời 5","Đời 6"];
+  document.getElementById('mob-sdrop').innerHTML=res.map(p=>{
+    const ph=getPhoto(p.id);
+    const m=p.gender==='male';
+    const bg=m?'linear-gradient(135deg,#4a9abf,#2d7a9a)':'linear-gradient(135deg,#c5607a,#9a3a5a)';
+    const ini=(p.name||'').charAt((p.name||'').lastIndexOf(' ')+1)||(p.name||'').charAt(0);
+    return`<div class="sdi" onmousedown="mobPickRes('${p.id}')">
+      <div class="sda" style="background:${bg}">${ph?`<img src="${ph}">`:''}${ph?'':ini.toUpperCase()}</div>
+      <div>
+        <div style="font-size:14px;font-weight:500;color:var(--ink);font-family:'Playfair Display',serif">${hl(p.name,q)}</div>
+        <div style="font-size:11px;color:var(--ink3)">${gn[p.gen]||''} · ${p.birth||''}${p.death?' – '+p.death:''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('mob-sdrop').style.display='block';
+});
+
+function mobPickRes(id){
+  const p=allPpl.find(x=>x.id===id);
+  closeMobSearch();
+  if(p)showModal(p);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
