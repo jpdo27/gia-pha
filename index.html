@@ -1343,8 +1343,8 @@ function computeXungHo(me,them){
     // bloodRelTerm là quan hệ của người máu: cha→cha dượng, mẹ→mẹ kế, chú→thím, cô→dượng...
     if(bloodRelTerm==='Cha / Ba'){return spouseG==='male'?{term:'Cha dượng',call:'Con'}:{term:'Mẹ kế',call:'Con'};}
     if(bloodRelTerm==='Mẹ / Má'){return spouseG==='male'?{term:'Cha dượng',call:'Con'}:{term:'Mẹ kế',call:'Con'};}
-    if(bloodRelTerm==='Ông'){return spouseG==='female'?{term:'Bà',call:'Cháu'}:{term:'Ông',call:'Cháu'};}
-    if(bloodRelTerm==='Bà'){return spouseG==='male'?{term:'Ông',call:'Cháu'}:{term:'Bà',call:'Cháu'};}
+    if(bloodRelTerm==='Ông Nội'||bloodRelTerm==='Ông Ngoại'||bloodRelTerm==='Ông'){return spouseG==='female'?{term:'Bà',call:'Cháu'}:{term:'Ông',call:'Cháu'};}
+    if(bloodRelTerm==='Bà Nội'||bloodRelTerm==='Bà Ngoại'||bloodRelTerm==='Bà'){return spouseG==='male'?{term:'Ông',call:'Cháu'}:{term:'Bà',call:'Cháu'};}
     if(bloodRelTerm==='Chú'){return {term:spouseG==='female'?'Thím':'Chú',call:'Cháu'};}
     if(bloodRelTerm==='Bác'){return {term:spouseG==='female'?'Bác gái':'Bác',call:'Cháu'};}
     if(bloodRelTerm==='Cô'){return {term:spouseG==='male'?'Dượng':'Cô',call:'Cháu'};}
@@ -1375,7 +1375,7 @@ function computeXungHo(me,them){
     function ancestorName(depth){
       if(depth===1)return'cha/mẹ';
       if(depth===2)return'ông bà';
-      if(depth===3)return'cụ/cố';
+      if(depth===3)return'ông cố';
       if(depth===4)return'kỵ';
       if(depth===5)return'sơ/tổ';
       return`tổ tiên đời ${depth}`;
@@ -1417,8 +1417,8 @@ function computeXungHo(me,them){
       }
       if(u===3){
         return themG==='male'
-          ?{term:'Cụ / Cố',call:'Chắt',explain:'Cụ ông của bạn (3 đời trên).'}
-          :{term:'Cụ / Cố',call:'Chắt',explain:'Cụ bà của bạn (3 đời trên).'};
+          ?{term:'Ông Cố',call:'Chắt',explain:'Ông cố của bạn (3 đời trên).'}
+          :{term:'Bà Cố',call:'Chắt',explain:'Bà cố của bạn (3 đời trên).'};
       }
       if(u===4){
         return themG==='male'
@@ -1444,8 +1444,8 @@ function computeXungHo(me,them){
       }
       if(d===3){
         return themG==='male'
-          ?{term:'Chắt trai',call:'Cụ/Cố',explain:'Chắt trai của bạn.'}
-          :{term:'Chắt gái',call:'Cụ/Cố',explain:'Chắt gái của bạn.'};
+          ?{term:'Chắt trai',call:'Ông Cố/Bà Cố',explain:'Chắt trai của bạn.'}
+          :{term:'Chắt gái',call:'Ông Cố/Bà Cố',explain:'Chắt gái của bạn.'};
       }
       if(d===4){
         return themG==='male'
@@ -1508,18 +1508,18 @@ function computeXungHo(me,them){
           else loai='anh em cô cậu — cùng ông cố';
         }
         if(themG==='male'){
-          return meOlder?{term:'Em (họ)',call:'Anh',explain:`Em họ xa — ${loai}.`}:{term:'Anh (họ)',call:'Em',explain:`Anh họ xa — ${loai}.`};
+          return meOlder?{term:'Em (họ)',call:'Anh',explain:`Em họ — ${loai}.`}:{term:'Anh (họ)',call:'Em',explain:`Anh họ — ${loai}.`};
         } else {
-          return meOlder?{term:'Em (họ)',call:'Chị',explain:`Em họ xa — ${loai}.`}:{term:'Chị (họ)',call:'Em',explain:`Chị họ xa — ${loai}.`};
+          return meOlder?{term:'Em (họ)',call:'Chị',explain:`Em họ — ${loai}.`}:{term:'Chị (họ)',call:'Em',explain:`Chị họ — ${loai}.`};
         }
       }
 
       // u>=4
       const anc=ancestorName(u);
       if(themG==='male'){
-        return meOlder?{term:'Em (họ xa)',call:'Anh',explain:`Em họ xa — cùng ${anc}.`}:{term:'Anh (họ xa)',call:'Em',explain:`Anh họ xa — cùng ${anc}.`};
+        return meOlder?{term:'Em họ',call:'Anh',explain:`Em họ — cùng ${anc}.`}:{term:'Anh họ',call:'Em',explain:`Anh họ — cùng ${anc}.`};
       } else {
-        return meOlder?{term:'Em (họ xa)',call:'Chị',explain:`Em họ xa — cùng ${anc}.`}:{term:'Chị (họ xa)',call:'Em',explain:`Chị họ xa — cùng ${anc}.`};
+        return meOlder?{term:'Em họ',call:'Chị',explain:`Em họ — cùng ${anc}.`}:{term:'Chị họ',call:'Em',explain:`Chị họ — cùng ${anc}.`};
       }
     }
 
@@ -1564,15 +1564,15 @@ function computeXungHo(me,them){
 
       if(diff===3){
         return themG==='male'
-          ?{term:'Cụ / Cố',call:'Cháu/Chắt',explain:'Cụ họ xa của bạn — cùng đời cụ/cố bạn.'}
-          :{term:'Cụ / Cố',call:'Cháu/Chắt',explain:'Cụ họ xa của bạn — cùng đời cụ/cố bạn.'};
+          ?{term:'Ông Cố',call:'Cháu/Chắt',explain:'Ông cố họ của bạn — cùng đời ông cố bạn.'}
+          :{term:'Ông Cố',call:'Cháu/Chắt',explain:'Ông cố họ của bạn — cùng đời ông cố bạn.'};
       }
       if(diff===4){
         return themG==='male'
-          ?{term:'Kỵ',call:'Chắt/Chút',explain:'Kỵ họ xa của bạn.'}
-          :{term:'Kỵ',call:'Chắt/Chút',explain:'Kỵ họ xa của bạn.'};
+          ?{term:'Kỵ',call:'Chắt/Chút',explain:'Kỵ họ của bạn.'}
+          :{term:'Kỵ',call:'Chắt/Chút',explain:'Kỵ họ của bạn.'};
       }
-      return{term:'Tổ tiên',call:'Hậu duệ',explain:`Bậc trên họ xa — cách ${diff} đời so với cha/mẹ bạn.`};
+      return{term:'Tổ tiên',call:'Hậu duệ',explain:`Họ hàng bậc trên — cách ${diff} đời so với cha/mẹ bạn.`};
     }
 
     // ── XIÊN: them thấp hơn me (d > u) ──
@@ -1587,18 +1587,18 @@ function computeXungHo(me,them){
         return{term:'Cháu gái',call,explain:`Cháu gái họ — con của anh/em họ bên ${nn||'nội/ngoại'} của bạn.`};
       }
       if(diff===2){
-        if(themG==='male')return{term:'Cháu trai',call:'Ông/Bà',explain:'Cháu trai họ xa — cháu của anh/em họ bạn.'};
-        return{term:'Cháu gái',call:'Ông/Bà',explain:'Cháu gái họ xa — cháu của anh/em họ bạn.'};
+        if(themG==='male')return{term:'Cháu trai',call:'Ông/Bà',explain:'Cháu trai họ — cháu của anh/em họ bạn.'};
+        return{term:'Cháu gái',call:'Ông/Bà',explain:'Cháu gái họ — cháu của anh/em họ bạn.'};
       }
       if(diff===3){
-        if(themG==='male')return{term:'Chắt trai',call:'Cụ/Cố',explain:'Chắt họ xa của bạn.'};
-        return{term:'Chắt gái',call:'Cụ/Cố',explain:'Chắt họ xa của bạn.'};
+        if(themG==='male')return{term:'Chắt trai',call:'Ông Cố/Bà Cố',explain:'Chắt họ của bạn.'};
+        return{term:'Chắt gái',call:'Ông Cố/Bà Cố',explain:'Chắt họ của bạn.'};
       }
-      if(themG==='male')return{term:'Hậu duệ',call:'Tổ tiên',explain:`Hậu duệ họ xa cách ${diff} đời.`};
-      return{term:'Hậu duệ',call:'Tổ tiên',explain:`Hậu duệ họ xa cách ${diff} đời.`};
+      if(themG==='male')return{term:'Hậu duệ',call:'Tổ tiên',explain:`Họ hàng bậc dưới — cách ${diff} đời.`};
+      return{term:'Hậu duệ',call:'Tổ tiên',explain:`Họ hàng bậc dưới — cách ${diff} đời.`};
     }
 
-    return{term:'Họ hàng xa',call:'',explain:'Có cùng tổ tiên nhưng quan hệ chưa xác định được.'};
+    return{term:'Họ hàng',call:'',explain:'Có cùng tổ tiên trong gia phả.'};
   }
 
   // Tính quan hệ blood trước
