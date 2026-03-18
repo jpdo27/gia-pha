@@ -906,11 +906,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyg4fGgRr7XAJsUlhETl
   <div class="leg"><span style="font-size:11px;color:var(--gold3)">› = có con cháu</span></div>
 </div>
 <div id="hint" style="display:none"></div>
-<div id="gesture-guide">
-  <div class="gg-item"><div class="gg-icon">🤏</div><div class="gg-label">Pinch / Cuộn để zoom</div></div>
-  <div class="gg-item"><div class="gg-icon">✋</div><div class="gg-label">Kéo để di chuyển</div></div>
-  <div class="gg-item"><div class="gg-icon">👆</div><div class="gg-label">Tap để xem chi tiết</div></div>
-</div>
+
 
 <div id="mover">
   <div id="modal">
@@ -1100,7 +1096,11 @@ svg.attr('width',W).attr('height',H);
 const g=svg.append('g').attr('id','mg');
 const zoom=d3.zoom().scaleExtent([0.05,4]).on('zoom',e=>g.attr('transform',e.transform));
 svg.call(zoom).on('dblclick.zoom',null);
-svg.on('click',()=>closeModal());
+// Use mousedown+mouseup to detect click vs drag (prevent zoom interference)
+let _dragMoved=false;
+svg.on('mousedown.clickdetect',()=>{_dragMoved=false;})
+   .on('mousemove.clickdetect',()=>{_dragMoved=true;})
+   .on('mouseup.clickdetect',()=>{if(!_dragMoved)closeModal();});
 
 // SP_DY: khoảng dọc giữa 2 dòng spouse khi có nhiều vợ/chồng
 const SP_DY=CH+28;
@@ -1115,6 +1115,7 @@ const ROLE_COLORS={
 function renderTree(rootData){
   g.selectAll('*').remove();
   if(!rootData)return;
+  svg.call(zoom); // re-apply zoom after content cleared
 
   const isClassic=treeStyle==='classic';
   // In classic mode, use gen-aware node spacing
