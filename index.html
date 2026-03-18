@@ -3,7 +3,7 @@
 ╔══════════════════════════════════════════════════════════════╗
 ║         GIA PHẢ GIA ĐÌNH ÔNG BÀ CHÁNH THÁM                 ║
 ╠══════════════════════════════════════════════════════════════╣
-║  Version  : 1.0.0                                           ║
+║  Version  : 1.1.0                                           ║
 ║  Built by : Claude Sonnet (Anthropic) — claude.ai           ║
 ║  Stack    : Vanilla JS · D3.js · Google Sheets · Apps Script║
 ║  Password : Stored server-side in Google Sheet > Config tab ║
@@ -720,6 +720,7 @@ const APP_VERSION = "1.0.0"; // cập nhật mỗi khi release
     <button class="vb" id="vb-list" onclick="switchView('list')">Danh sách</button>
     <button class="vb" id="vb-xh" onclick="switchView('xh')">Xưng hô</button>
     <button class="vb" id="vb-tree" onclick="switchView('tree')">🌳 Cây</button>
+    <button class="vb" id="vb-add" onclick="switchView('add')" title="Thêm thành viên">✚ Thêm</button>
   </div>
   <div id="search-wrap">
     <span id="si">🔍</span>
@@ -775,6 +776,106 @@ const APP_VERSION = "1.0.0"; // cập nhật mỗi khi release
     <div id="fam-root"></div>
     <div id="fam-sections"></div>
 
+  </div>
+</div>
+<div id="add-wrap">
+  <div id="add-inner">
+    <div id="add-title">✚ Thêm thành viên</div>
+    <div id="add-sub">Điền thông tin hộ gia đình. Vợ/chồng và con cái sẽ tự động được thêm vào đúng vị trí trong cây.<br>Thông tin sẽ được lưu ngay vào gia phả.</div>
+
+    <!-- CHỒNG / ĐẦU HỘ -->
+    <div class="add-section">
+      <div class="add-section-title">👨 Chồng / Người đứng đầu hộ</div>
+      <div class="add-grid">
+        <div class="add-field">
+          <label>Họ và tên *</label>
+          <input id="af-h-name" type="text" placeholder="Nguyễn Văn Anh">
+        </div>
+        <div class="add-field">
+          <label>Giới tính *</label>
+          <select id="af-h-gender"><option value="male">Nam</option><option value="female">Nữ</option></select>
+        </div>
+        <div class="add-field">
+          <label>Ngày sinh</label>
+          <input id="af-h-birth" type="text" placeholder="DD/MM/YYYY hoặc YYYY">
+          <span class="hint">VD: 15/08/1965 hoặc chỉ 1965</span>
+        </div>
+        <div class="add-field">
+          <label>Ngày mất (nếu đã mất)</label>
+          <input id="af-h-death" type="text" placeholder="DD/MM/YYYY hoặc YYYY">
+        </div>
+        <div class="add-field">
+          <label>Quê quán</label>
+          <input id="af-h-home" type="text" placeholder="Quảng Nam, Đà Nẵng...">
+        </div>
+        <div class="add-field">
+          <label>Nghề nghiệp</label>
+          <input id="af-h-job" type="text" placeholder="Nông dân, Kỹ sư...">
+        </div>
+      </div>
+      <div class="add-grid" style="margin-top:12px">
+        <div class="add-field">
+          <label>Cha ruột là (gõ tên để tìm) *</label>
+          <div style="position:relative">
+            <input id="af-h-parent-inp" type="text" placeholder="Tìm tên cha hoặc mẹ ruột..." autocomplete="off">
+            <div id="af-h-parent-drop" style="position:absolute;top:100%;left:0;right:0;background:var(--paper);border:1px solid rgba(154,110,30,.2);border-radius:8px;box-shadow:var(--shadow-lg);z-index:100;display:none;max-height:180px;overflow-y:auto"></div>
+          </div>
+          <input type="hidden" id="af-h-parent-id">
+          <span class="hint" id="af-h-parent-hint">Bắt buộc — để ghép đúng vị trí trong cây</span>
+        </div>
+        <div class="add-field">
+          <label>Ghi chú</label>
+          <textarea id="af-h-note" placeholder="Câu chuyện, thành tích..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- VỢ -->
+    <div class="add-section">
+      <div class="add-section-title">👩 Vợ <span style="font-size:12px;color:var(--ink3);font-weight:400">(để trống nếu chưa có / không có)</span></div>
+      <div class="add-grid">
+        <div class="add-field">
+          <label>Họ và tên vợ</label>
+          <input id="af-v-name" type="text" placeholder="Trần Thị Bình">
+        </div>
+        <div class="add-field">
+          <label>Ngày sinh</label>
+          <input id="af-v-birth" type="text" placeholder="DD/MM/YYYY hoặc YYYY">
+        </div>
+        <div class="add-field">
+          <label>Ngày mất (nếu đã mất)</label>
+          <input id="af-v-death" type="text" placeholder="DD/MM/YYYY hoặc YYYY">
+        </div>
+        <div class="add-field">
+          <label>Quê quán</label>
+          <input id="af-v-home" type="text" placeholder="">
+        </div>
+        <div class="add-field">
+          <label>Nghề nghiệp</label>
+          <input id="af-v-job" type="text" placeholder="">
+        </div>
+        <div class="add-field">
+          <label>Ghi chú</label>
+          <input id="af-v-note" type="text" placeholder="">
+        </div>
+      </div>
+    </div>
+
+    <!-- CON CÁI -->
+    <div class="add-section">
+      <div class="add-section-title">👶 Con cái <span style="font-size:12px;color:var(--ink3);font-weight:400">(theo thứ tự từ lớn đến nhỏ)</span></div>
+      <div style="display:grid;grid-template-columns:2fr 90px 1fr 1fr;gap:6px;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid rgba(154,110,30,.12)">
+        <span style="font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:.6px;font-weight:700">Họ tên con</span>
+        <span style="font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:.6px;font-weight:700">Giới tính</span>
+        <span style="font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:.6px;font-weight:700">Năm sinh</span>
+        <span style="font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:.6px;font-weight:700">Năm mất</span>
+      </div>
+      <div id="af-cons"></div>
+      <button onclick="addConRow()" style="margin-top:10px;background:none;border:1px dashed rgba(154,110,30,.4);border-radius:8px;padding:8px 16px;color:var(--gold);cursor:pointer;font-size:13px;width:100%;transition:all .15s" onmouseover="this.style.background='var(--gold-light)'" onmouseout="this.style.background='none'">+ Thêm con</button>
+    </div>
+
+    <button id="add-submit" onclick="submitAddMember()">💾 Lưu vào gia phả</button>
+    <div id="add-msg"></div>
   </div>
 </div>
 <div id="tree-wrap" style="display:none">
@@ -877,6 +978,9 @@ const APP_VERSION = "1.0.0"; // cập nhật mỗi khi release
   </button>
   <button class="mbt" id="mbt-tree" onclick="mobTab('tree')">
     <span class="mbi">🌳</span>Cây
+  </button>
+  <button class="mbt" id="mbt-add" onclick="mobTab('add')">
+    <span class="mbi">✚</span>Thêm
   </button>
 </div>
 
@@ -1632,13 +1736,14 @@ function renderListView(){
 // ── VIEW SWITCH ───────────────────────────────────────────────
 function switchView(mode){
   viewMode=mode;
-  const allViews=['family','tree','list','xh','outline'];
+  const allViews=['family','tree','list','xh','outline','add'];
   allViews.forEach(t=>{
     const db=document.getElementById('vb-'+t);
     if(db)db.classList.toggle('on',t===mode);
     const mb=document.getElementById('mbt-'+t);
     if(mb)mb.classList.toggle('on',t===mode);
   });
+  document.getElementById('add-wrap').style.display=mode==='add'?'block':'none';
   document.getElementById('family-wrap').style.display=mode==='family'?'block':'none';
   document.getElementById('tree-wrap').style.display=mode==='tree'?'block':'none';
   document.getElementById('list-wrap').style.display=mode==='list'?'block':'none';
@@ -1668,6 +1773,7 @@ function switchView(mode){
   if(mode==='list')renderListView();
   if(mode==='xh')initXH();
   if(mode==='outline')renderOutline();
+  if(mode==='add')initAddForm();
   if(mode==='tree'){
     // Update dimensions (tree-wrap was display:none at init so W/H=0)
     setTimeout(()=>{
@@ -2578,33 +2684,44 @@ function computeXungHo(me,them){
       const diff=d-u;
 
       if(diff===1){
-        // Them là con của anh/em họ của me
-        // Quyết định Cậu/Bác/Chú/Cô/Dì dựa vào:
-        // Me có ở bên NỘI hay NGOẠI của them (con)?
-        // = hướng đi từ LCA xuống them: brThem.gender
-        //   male  → me ở bên nội của con → Bác/Chú (nam) hoặc Cô (nữ)
-        //   female → me ở bên ngoại của con → Cậu (nam) hoặc Dì (nữ)
-        const nnThem=noiNgoaiThem(); // 'nội' hoặc 'ngoại' từ góc nhìn của THEM
-        // Không so năm sinh me vs them (khác thế hệ/nhánh)
-        // Chỉ gọi chung Chú/Bác/Cô/Cậu/Dì
+        // Me là chú/bác/cô/cậu/dì — them là cháu (con của anh/em me)
+        // nnThem: bên NỘI (ba cháu là con trai của LCA) hay NGOẠI (mẹ cháu là con gái LCA)
+        const nnThem=noiNgoaiThem();
+        const side=nnThem?`bên ${nnThem}`:'';
+
+        // Xác định vai vế theo ĐỜI 2: so sinh năm brMe vs brThem
+        // brMe sinh trước brThem → nhánh me LỚN HƠN → me là "anh/chị họ" của them's parent
+        //   → them's parent là "em họ" của me → me là BÁC
+        // brMe sinh sau brThem → nhánh me NHỎ HƠN → me là "em họ" của them's parent
+        //   → them's parent là "anh/chị họ" của me → me là CHÚ
+        const brMeBirth5=parseInt(brMe?brMe.birth:0)||0;
+        const brThemBirth5=parseInt(brThem?brThem.birth:0)||0;
+        // brMe sinh trước brThem → nhánh me là ANH/CHỊ
+        const brMeIsOlder=brMeBirth5>0&&brThemBirth5>0?brMeBirth5<brThemBirth5:null;
+
+        // call: cháu gọi me bằng gì
         let call;
         if(meBloodG==='male'){
-          call=nnThem==='nội'?'Chú/Bác':'Cậu';
+          if(nnThem==='nội'){
+            call=brMeIsOlder===null?'Chú/Bác':brMeIsOlder?'Bác':'Chú';
+          } else {
+            call='Cậu';
+          }
         } else {
           call=nnThem==='nội'?'Cô':'Dì';
         }
-        const side=nnThem?`bên ${nnThem}`:'';
-        // So năm sinh meBlood vs cha/mẹ của them để biết anh hay em
-        // So năm sinh đời 2: meBlood vs themParent (cùng đời 2 của LCA)
-        const meBloodPerson=map[meBloodId];
-        const themParent=pathThem[depthThem-1]; // cha/mẹ của them (đời 2 của LCA)
-        const meBirth5=parseInt(meBloodPerson?meBloodPerson.birth:0)||0;
-        const pBirth5=parseInt(themParent?themParent.birth:0)||0;
-        // meBlood sinh trước themParent → meBlood là anh/chị → them gọi meBlood là bác/cô
-        const meIsOlder5=meBirth5>0&&pBirth5>0?meBirth5<pBirth5:null;
-        const anhChiEm5=meIsOlder5===null?'anh/em họ':meIsOlder5?'anh/chị họ':'em họ';
-        if(bloodPersonG==='male')return{term:'Cháu trai',call,explain:`Cháu trai ${side} — con ${anhChiEm5} của bạn.`};
-        return{term:'Cháu gái',call,explain:`Cháu gái ${side} — con ${anhChiEm5} của bạn.`};
+
+        // explain: them là con của anh họ hay em họ của me
+        const tpG=brThem?brThem.gender:'male';
+        const anhEmHo=brMeIsOlder===null
+          ?(tpG==='male'?'anh/em họ':'chị/em họ')
+          :brMeIsOlder
+            ?(tpG==='male'?'em họ':'em họ')   // brThem trẻ hơn → là em họ của me
+            :(tpG==='male'?'anh họ':'chị họ'); // brThem lớn hơn → là anh/chị họ của me
+        const boBen=nnThem==='nội'?'bên nội':'bên ngoại';
+
+        if(bloodPersonG==='male')return{term:'Cháu trai',call,explain:`Cháu trai — con ${anhEmHo} ${boBen} của bạn.`};
+        return{term:'Cháu gái',call,explain:`Cháu gái — con ${anhEmHo} ${boBen} của bạn.`};
       }
       if(diff===2){
         if(bloodPersonG==='male')return{term:'Cháu trai',call:'Ông/Bà',explain:'Cháu trai họ — cháu của anh/em họ bạn.'};
@@ -2907,6 +3024,162 @@ function makeFamChildCard(person, isSpouse){
   return card;
 }
 
+
+// ── ADD MEMBER FORM ───────────────────────────────────────────
+let _addConCount = 0;
+
+function initAddForm(){
+  // Reset form
+  ['af-h-name','af-h-birth','af-h-death','af-h-home','af-h-job','af-h-note',
+   'af-v-name','af-v-birth','af-v-death','af-v-home','af-v-job','af-v-note',
+   'af-h-parent-inp','af-h-parent-id'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.value='';
+  });
+  document.getElementById('af-cons').innerHTML='';
+  _addConCount=0;
+  // Add 1 empty con row
+  addConRow();
+  // Setup parent search
+  setupParentSearch();
+  const msg=document.getElementById('add-msg');
+  msg.style.display='none';
+}
+
+function addConRow(){
+  _addConCount++;
+  const div=document.createElement('div');
+  div.className='add-con-row';
+  div.id='con-row-'+_addConCount;
+  div.innerHTML=`
+    <input type="text" placeholder="Họ tên con thứ ${_addConCount}" style="padding:8px 10px;border:1.5px solid rgba(154,110,30,.25);border-radius:6px;font-size:13px;font-family:'Open Sans',sans-serif;outline:none;width:100%;box-sizing:border-box;background:var(--bg);color:var(--ink)" class="con-name">
+    <select style="padding:8px 6px;border:1.5px solid rgba(154,110,30,.25);border-radius:6px;font-size:13px;font-family:'Open Sans',sans-serif;outline:none;background:var(--bg);color:var(--ink)" class="con-gt">
+      <option value="male">Nam</option><option value="female">Nữ</option>
+    </select>
+    <input type="text" placeholder="YYYY" style="padding:8px 10px;border:1.5px solid rgba(154,110,30,.25);border-radius:6px;font-size:13px;font-family:'Open Sans',sans-serif;outline:none;width:100%;box-sizing:border-box;background:var(--bg);color:var(--ink)" class="con-birth">
+    <input type="text" placeholder="YYYY (nếu mất)" style="padding:8px 10px;border:1.5px solid rgba(154,110,30,.25);border-radius:6px;font-size:13px;font-family:'Open Sans',sans-serif;outline:none;width:100%;box-sizing:border-box;background:var(--bg);color:var(--ink)" class="con-death">
+  `;
+  document.getElementById('af-cons').appendChild(div);
+}
+
+function setupParentSearch(){
+  const inp=document.getElementById('af-h-parent-inp');
+  const drop=document.getElementById('af-h-parent-drop');
+  const hiddenId=document.getElementById('af-h-parent-id');
+  if(!inp||!drop)return;
+
+  inp.addEventListener('input',()=>{
+    const q=inp.value.trim();
+    if(!q){drop.style.display='none';return;}
+    const results=allPpl.filter(p=>!p.spouse_of&&noAccent(p.name).includes(noAccent(q))).slice(0,8);
+    if(!results.length){drop.style.display='none';return;}
+    drop.innerHTML=results.map(p=>`
+      <div style="padding:9px 12px;cursor:pointer;border-bottom:1px solid rgba(154,110,30,.07);font-size:13px;color:var(--ink);transition:background .1s"
+        onmouseover="this.style.background='var(--gold-light)'"
+        onmouseout="this.style.background=''"
+        onmousedown="pickParent('${p.id}','${p.name.replace(/'/g,"\'")}')">
+        <b>${p.name}</b>
+        <span style="color:var(--ink3);font-size:11px;margin-left:6px">${GEN_NAMES[p.gen]||''} · ${p.birth||''}</span>
+      </div>`).join('');
+    drop.style.display='block';
+  });
+  inp.addEventListener('blur',()=>setTimeout(()=>drop.style.display='none',200));
+}
+
+function pickParent(id,name){
+  document.getElementById('af-h-parent-id').value=id;
+  document.getElementById('af-h-parent-inp').value=name;
+  document.getElementById('af-h-parent-drop').style.display='none';
+  document.getElementById('af-h-parent-hint').textContent='✓ Đã chọn: '+name;
+  document.getElementById('af-h-parent-hint').style.color='#2a7a3c';
+}
+
+function genId(name){
+  const parts=(name||'').trim().split(/\s+/);
+  const s=parts.slice(-2).join('').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/\u0111/g,'d').replace(/[^a-z]/g,'');
+  return s.substring(0,8)+(Date.now()%9000+1000);
+}
+
+async function submitAddMember(){
+  const btn=document.getElementById('add-submit');
+  const msg=document.getElementById('add-msg');
+
+  const hName =document.getElementById('af-h-name').value.trim();
+  const hGender=document.getElementById('af-h-gender').value;
+  const hBirth =document.getElementById('af-h-birth').value.trim();
+  const hDeath =document.getElementById('af-h-death').value.trim();
+  const hHome  =document.getElementById('af-h-home').value.trim();
+  const hJob   =document.getElementById('af-h-job').value.trim();
+  const hNote  =document.getElementById('af-h-note').value.trim();
+  const parentId=document.getElementById('af-h-parent-id').value.trim();
+
+  if(!hName){showAddMsg('⚠️ Vui lòng nhập họ tên.','err');return;}
+  if(!parentId){showAddMsg('⚠️ Vui lòng chọn cha/mẹ ruột để ghép đúng vị trí.','err');return;}
+
+  // Compute gen from parent
+  const parentPerson=allPpl.find(x=>x.id===parentId);
+  const gen=(parseInt(parentPerson?parentPerson.gen:0)||0)+1;
+
+  // Build rows to add
+  const rows=[];
+  const hId=genId(hName);
+  rows.push({id:hId,name:hName,gender:hGender,birth_date:hBirth,death_date:hDeath,
+    hometown:hHome,job:hJob,note:hNote,gen,parent_id:parentId,spouse_of:'',co_parent_id:''});
+
+  // Vợ
+  const vName=document.getElementById('af-v-name').value.trim();
+  let vId='';
+  if(vName){
+    vId=genId(vName);
+    rows.push({id:vId,name:vName,gender:hGender==='male'?'female':'male',
+      birth_date:document.getElementById('af-v-birth').value.trim(),
+      death_date:document.getElementById('af-v-death').value.trim(),
+      hometown:document.getElementById('af-v-home').value.trim(),
+      job:document.getElementById('af-v-job').value.trim(),
+      note:document.getElementById('af-v-note').value.trim(),
+      gen,parent_id:'',spouse_of:hId,co_parent_id:''});
+  }
+
+  // Con
+  document.querySelectorAll('#af-cons .add-con-row').forEach(row=>{
+    const conName=row.querySelector('.con-name').value.trim();
+    if(!conName)return;
+    rows.push({id:genId(conName),name:conName,
+      gender:row.querySelector('.con-gt').value,
+      birth_date:row.querySelector('.con-birth').value.trim(),
+      death_date:row.querySelector('.con-death').value.trim(),
+      hometown:'',job:'',note:'',gen:gen+1,parent_id:hId,spouse_of:'',co_parent_id:''});
+  });
+
+  btn.disabled=true;btn.textContent='Đang lưu…';
+
+  // Submit all rows to Apps Script via doPost
+  const pw=sessionStorage.getItem(PW_KEY)||'';
+  try{
+    const r=await fetch(SCRIPT_URL,{
+      method:'POST',
+      body:JSON.stringify({action:'addMembers',pw,rows})
+    });
+    const data=await r.json();
+    if(data.ok){
+      showAddMsg(`✅ Đã thêm ${rows.length} người vào gia phả! Tải lại để xem.`,'ok');
+      setTimeout(()=>loadData(true,pw),1500);
+    } else {
+      showAddMsg('❌ Lỗi: '+(data.msg||data.error||'Không rõ'),'err');
+    }
+  }catch(e){
+    showAddMsg('❌ Lỗi kết nối. Kiểm tra mạng rồi thử lại.','err');
+  }
+  btn.disabled=false;btn.textContent='💾 Lưu vào gia phả';
+}
+
+function showAddMsg(text,type){
+  const el=document.getElementById('add-msg');
+  el.textContent=text;el.className=type;el.style.display='block';
+  el.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
 // ── TREE STYLE TOGGLE ─────────────────────────────────────────
 
 // Gen-based card sizes for classic style
