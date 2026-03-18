@@ -2306,7 +2306,7 @@ function computeXungHo(me,them){
     }
     if(bloodRelTerm==='Cậu'){
       return spouseG==='female'
-        ?{term:'Mợ',call:'Cháu',explain:'Mợ của bạn — vợ cậu.'}
+        ?{term:'Mợ',call:'Cháu',explain:'Mợ của bạn — vợ cậu (vợ anh/em trai của mẹ bạn).'}
         :{term:'Cậu',call:'Cháu'};
     }
     if(bloodRelTerm==='Dì'){
@@ -2314,17 +2314,86 @@ function computeXungHo(me,them){
         ?{term:'Dượng',call:'Cháu',explain:'Dượng của bạn — chồng dì.'}
         :{term:'Dì',call:'Cháu'};
     }
+
+    // ── Cháu ↔ Dâu/Rể của cháu ──
+    if(bloodRelTerm==='Cháu trai'||bloodRelTerm==='Cháu trai họ'){
+      // call: cháu dâu gọi me bằng gì = danh xưng của me (Bác/Chú/Cô/Cậu/Dì...)
+      // → lấy từ bloodRelTerm ngược: me gọi blood là gì? Không biết ở đây.
+      // Dùng signal từ ngoài: truyền vào qua argument thứ 2 (bloodRelG) là gender của me
+      // bloodRelG = map[themBloodId].gender = male (cháu trai) → me là ai? không rõ
+      // → để call='' và Case 2 sẽ tính
+      return spouseG==='female'
+        ?{term:'Cháu dâu',call:null,explain:'Vợ của cháu trai (cháu dâu).'}
+        :null;
+    }
+    if(bloodRelTerm==='Cháu gái'||bloodRelTerm==='Cháu gái họ'){
+      return spouseG==='male'
+        ?{term:'Cháu rể',call:null,explain:'Chồng của cháu gái (cháu rể).'}
+        :null;
+    }
+
+    // ── Anh/Em/Chị ↔ Dâu/Rể ──
+    if(bloodRelTerm==='Em trai'){
+      return spouseG==='female'
+        ?{term:'Em',call:'Anh',explain:'Em dâu — vợ của em trai của bạn.'}
+        :null;
+    }
+    if(bloodRelTerm==='Em gái'){
+      return spouseG==='male'
+        ?{term:'Em',call:'Chị',explain:'Em rể — chồng của em gái của bạn.'}
+        :null;
+    }
+    if(bloodRelTerm==='Anh'){
+      return spouseG==='female'
+        ?{term:'Chị dâu',call:'Em',explain:'Chị dâu — vợ của anh của bạn.'}
+        :null;
+    }
+    if(bloodRelTerm==='Chị'){
+      return spouseG==='male'
+        ?{term:'Anh rể',call:'Em',explain:'Anh rể — chồng của chị của bạn.'}
+        :null;
+    }
+    if(bloodRelTerm==='Em họ'||bloodRelTerm==='Em (họ)'){
+      return spouseG==='female'
+        ?{term:'Em dâu họ',call:'Anh/Chị',explain:'Em dâu họ — vợ của em họ của bạn.'}
+        :spouseG==='male'
+          ?{term:'Em rể họ',call:'Anh/Chị',explain:'Em rể họ — chồng của em họ của bạn.'}
+          :null;
+    }
+    if(bloodRelTerm==='Anh họ'||bloodRelTerm==='Anh (họ)'){
+      return spouseG==='female'
+        ?{term:'Chị dâu họ',call:'Em',explain:'Chị dâu họ — vợ của anh họ của bạn.'}
+        :null;
+    }
+    if(bloodRelTerm==='Chị họ'||bloodRelTerm==='Chị (họ)'){
+      return spouseG==='male'
+        ?{term:'Anh rể họ',call:'Em',explain:'Anh rể họ — chồng của chị họ của bạn.'}
+        :null;
+    }
+
+    // ── Ba/Mẹ ↔ Dâu/Rể ──
+    // dùng meG (gender của me) để xác định xưng Ba hay Mẹ
+    if(bloodRelTerm==='Con trai'){
+      return spouseG==='female'
+        ?{term:'Con',call:meG==='male'?'Ba':'Mẹ',explain:'Vợ của con trai bạn (con dâu).'}
+        :null;
+    }
+    if(bloodRelTerm==='Con gái'){
+      return spouseG==='male'
+        ?{term:'Con',call:meG==='male'?'Ba':'Mẹ',explain:'Chồng của con gái bạn (con rể).'}
+        :null;
+    }
+
     return null;
   }
 
   // ── Tính quan hệ BLOOD ──────────────────────────────────────────
   // u = upMe, d = downThem
 
-  // Helpers dùng chung — defined in outer scope so Case 2 can use them
-  // Dùng gen-2 ancestor (con trực tiếp của root) thay vì nextAfterLCA
-  // pathXxx: [person, ..., gen2, root] → gen2 = path[length-2]
-  const brMe  = pathMe.length  >= 2 ? pathMe[pathMe.length - 2]   : null;
-  const brThem= pathThem.length>= 2 ? pathThem[pathThem.length - 2]: null;
+  // Helpers — node ngay sau LCA về phía me/them (dùng để so vai vế đời 2)
+  // pathXxx: [root, gen2, ..., lca, ..., person] → brXxx = path[lcaDepthInXxx + 1]
+  const brMe  = lcaDepthInMe+1  < pathMe.length   ? pathMe[lcaDepthInMe+1]   : null;
+  const brThem= lcaDepthInThem+1< pathThem.length  ? pathThem[lcaDepthInThem+1]: null;
 
   function noiNgoaiThem(){
     if(!brThem)return'';
@@ -2416,8 +2485,8 @@ function computeXungHo(me,them){
       }
       if(d===3){
         return bloodPersonG==='male'
-          ?{term:'Chắt trai',call:'Ông Cố/Bà Cố',explain:'Chắt trai của bạn.'}
-          :{term:'Chắt gái',call:'Ông Cố/Bà Cố',explain:'Chắt gái của bạn.'};
+          ?{term:'Chắt trai',call:meBloodG==='male'?'Ông Cố':'Bà Cố',explain:'Chắt trai của bạn.'}
+          :{term:'Chắt gái',call:meBloodG==='male'?'Ông Cố':'Bà Cố',explain:'Chắt gái của bạn.'};
       }
       if(d===4){
         return bloodPersonG==='male'
@@ -2436,10 +2505,10 @@ function computeXungHo(me,them){
         const ruot=myP&&thP&&myP.id===thP.id;
         if(ruot){
           if(bloodPersonG==='male')return meOlder?{term:'Em trai',call:'Anh',explain:'Em trai ruột của bạn.'}:{term:'Anh',call:'Em',explain:'Anh ruột của bạn.'};
-          return meOlder?{term:'Em gái',call:'Chị',explain:'Em gái ruột của bạn.'}:{term:'Chị',call:'Em',explain:'Chị ruột của bạn.'};
+          return meOlder?{term:'Em gái',call:meBloodG==='male'?'Anh':'Chị',explain:'Em gái ruột của bạn.'}:{term:'Chị',call:'Em',explain:'Chị ruột của bạn.'};
         } else {
           if(bloodPersonG==='male')return meOlder?{term:'Em trai',call:'Anh',explain:'Em trai cùng cha khác mẹ (hoặc cùng mẹ khác cha).'}:{term:'Anh',call:'Em',explain:'Anh cùng cha khác mẹ (hoặc cùng mẹ khác cha).'};
-          return meOlder?{term:'Em gái',call:'Chị',explain:'Em gái cùng cha khác mẹ.'}:{term:'Chị',call:'Em',explain:'Chị cùng cha khác mẹ.'};
+          return meOlder?{term:'Em gái',call:meBloodG==='male'?'Anh':'Chị',explain:'Em gái cùng cha khác mẹ.'}:{term:'Chị',call:'Em',explain:'Chị cùng cha khác mẹ.'};
         }
       }
 
@@ -2467,11 +2536,11 @@ function computeXungHo(me,them){
         }
         if(bloodPersonG==='male'){
           return brMeOlder
-            ?{term:'Em họ',call:'Anh',explain:`Em họ của bạn — ${loai}.`}
+            ?{term:'Em họ',call:meBloodG==='male'?'Anh':'Chị',explain:`Em họ của bạn — ${loai}.`}
             :{term:'Anh họ',call:'Em',explain:`Anh họ của bạn — ${loai}.`};
         } else {
           return brMeOlder
-            ?{term:'Em họ',call:'Chị',explain:`Em họ của bạn — ${loai}.`}
+            ?{term:'Em họ',call:meBloodG==='male'?'Anh':'Chị',explain:`Em họ của bạn — ${loai}.`}
             :{term:'Chị họ',call:'Em',explain:`Chị họ của bạn — ${loai}.`};
         }
       }
@@ -2485,18 +2554,18 @@ function computeXungHo(me,them){
           else loai='anh em cô cậu — cùng ông cố';
         }
         if(bloodPersonG==='male'){
-          return brMeOlder?{term:'Em (họ)',call:'Anh',explain:`Em họ — ${loai}.`}:{term:'Anh (họ)',call:'Em',explain:`Anh họ — ${loai}.`};
+          return brMeOlder?{term:'Em (họ)',call:meBloodG==='male'?'Anh':'Chị',explain:`Em họ — ${loai}.`}:{term:'Anh (họ)',call:'Em',explain:`Anh họ — ${loai}.`};
         } else {
-          return brMeOlder?{term:'Em (họ)',call:'Chị',explain:`Em họ — ${loai}.`}:{term:'Chị (họ)',call:'Em',explain:`Chị họ — ${loai}.`};
+          return brMeOlder?{term:'Em (họ)',call:meBloodG==='male'?'Anh':'Chị',explain:`Em họ — ${loai}.`}:{term:'Chị (họ)',call:'Em',explain:`Chị họ — ${loai}.`};
         }
       }
 
       // u>=4
       const anc=ancestorName(u);
       if(bloodPersonG==='male'){
-        return brMeOlder?{term:'Em họ',call:'Anh',explain:`Em họ — cùng ${anc}.`}:{term:'Anh họ',call:'Em',explain:`Anh họ — cùng ${anc}.`};
+        return brMeOlder?{term:'Em họ',call:meBloodG==='male'?'Anh':'Chị',explain:`Em họ — cùng ${anc}.`}:{term:'Anh họ',call:'Em',explain:`Anh họ — cùng ${anc}.`};
       } else {
-        return brMeOlder?{term:'Em họ',call:'Chị',explain:`Em họ — cùng ${anc}.`}:{term:'Chị họ',call:'Em',explain:`Chị họ — cùng ${anc}.`};
+        return brMeOlder?{term:'Em họ',call:meBloodG==='male'?'Anh':'Chị',explain:`Em họ — cùng ${anc}.`}:{term:'Chị họ',call:'Em',explain:`Chị họ — cùng ${anc}.`};
       }
     }
 
@@ -2517,33 +2586,46 @@ function computeXungHo(me,them){
         // meParent sinh sau them  → them là ANH/CHỊ của meParent
         const themIsYounger=meParentBirth>0&&themBirth>0?meParentBirth<themBirth:null;
 
+        // Ruột hay họ: meParent và them cùng parent_id → ruột; khác → họ
+        const meParentParent=meParent?meParent.parent_id:null;
+        const themParent2=map[themBloodId]?map[themBloodId].parent_id:null;
+        const isRuot=meParentParent&&themParent2&&meParentParent===themParent2;
+        const ruotHo=isRuot?'ruột':'họ';
+
+        // Miền Nam: chị/em gái của cha/mẹ đều gọi là Cô/Dì
+        // Chồng chị/em gái của cha → Dượng (không phải Bác/Chú)
+        // Anh trai của mẹ → Cậu (không phải Bác)
+        // Chị của mẹ → Dì (không phải Bác)
         if(pG==='male'){
           if(bloodPersonG==='male'){
-            // them là em trai → Chú; them là anh → Bác
+            // Anh/em trai của ba → Bác/Chú
             return themIsYounger===null
-              ?{term:'Chú/Bác',call:'Cháu',explain:`Em/anh trai của ba bạn (bên nội).`}
+              ?{term:'Chú/Bác',call:'Cháu',explain:`Anh/em trai ${ruotHo} của ba bạn (bên nội).`}
               :themIsYounger
-                ?{term:'Chú',call:'Cháu',explain:`Chú của bạn — em trai của ba bạn (bên nội).`}
-                :{term:'Bác',call:'Cháu',explain:`Bác của bạn — anh của ba bạn (bên nội).`};
+                ?{term:'Chú',call:'Cháu',explain:`Chú của bạn — em trai ${ruotHo} của ba bạn (bên nội).`}
+                :{term:'Bác',call:'Cháu',explain:`Bác của bạn — anh ${ruotHo} của ba bạn (bên nội).`};
           }
+          // Chị/em gái của ba → Cô (miền Nam không dùng Bác cho chị của ba)
           return themIsYounger===null
-            ?{term:'Cô',call:'Cháu',explain:`Chị/em gái của ba bạn (bên nội).`}
+            ?{term:'Cô',call:'Cháu',explain:`Chị/em gái ${ruotHo} của ba bạn (bên nội).`}
             :themIsYounger
-              ?{term:'Cô',call:'Cháu',explain:`Cô của bạn — em gái của ba bạn (bên nội).`}
-              :{term:'Cô',call:'Cháu',explain:`Cô của bạn — chị gái của ba bạn (bên nội).`};
+              ?{term:'Cô',call:'Cháu',explain:`Cô của bạn — em gái ${ruotHo} của ba bạn (bên nội).`}
+              :{term:'Cô',call:'Cháu',explain:`Cô của bạn — chị gái ${ruotHo} của ba bạn (bên nội).`};
         } else {
           if(bloodPersonG==='male'){
+            // Anh/em trai của mẹ → Cậu (miền Nam: kể cả anh trai mẹ cũng gọi Cậu)
             return themIsYounger===null
-              ?{term:'Cậu',call:'Cháu',explain:`Anh/em trai của mẹ bạn (bên ngoại).`}
+              ?{term:'Cậu',call:'Cháu',explain:`Anh/em trai ${ruotHo} của mẹ bạn (bên ngoại).`}
               :themIsYounger
-                ?{term:'Cậu',call:'Cháu',explain:`Cậu của bạn — em trai của mẹ bạn (bên ngoại).`}
-                :{term:'Cậu',call:'Cháu',explain:`Cậu của bạn — anh trai của mẹ bạn (bên ngoại).`};
+                ?{term:'Cậu',call:'Cháu',explain:`Cậu của bạn — em trai ${ruotHo} của mẹ bạn (bên ngoại).`}
+                :{term:'Cậu',call:'Cháu',explain:`Cậu của bạn — anh trai ${ruotHo} của mẹ bạn (bên ngoại).`};
           }
+          // Chị/em gái của mẹ → Dì (miền Nam: kể cả chị của mẹ cũng gọi Dì)
           return themIsYounger===null
-            ?{term:'Dì',call:'Cháu',explain:`Chị/em gái của mẹ bạn (bên ngoại).`}
+            ?{term:'Dì',call:'Cháu',explain:`Chị/em gái ${ruotHo} của mẹ bạn (bên ngoại).`}
             :themIsYounger
-              ?{term:'Dì',call:'Cháu',explain:`Dì của bạn — em gái của mẹ bạn (bên ngoại).`}
-              :{term:'Dì',call:'Cháu',explain:`Dì của bạn — chị gái của mẹ bạn (bên ngoại).`};
+              ?{term:'Dì',call:'Cháu',explain:`Dì của bạn — em gái ${ruotHo} của mẹ bạn (bên ngoại).`}
+              :{term:'Dì',call:'Cháu',explain:`Dì của bạn — chị gái ${ruotHo} của mẹ bạn (bên ngoại).`};
         }
       }
 
@@ -2619,12 +2701,12 @@ function computeXungHo(me,them){
         return{term:'Cháu gái',call,explain:`Cháu gái — con ${anhEmHo} ${boBen} của bạn.`};
       }
       if(diff===2){
-        if(bloodPersonG==='male')return{term:'Cháu trai',call:'Ông/Bà',explain:'Cháu trai họ — cháu của anh/em họ bạn.'};
-        return{term:'Cháu gái',call:'Ông/Bà',explain:'Cháu gái họ — cháu của anh/em họ bạn.'};
+        if(bloodPersonG==='male')return{term:'Cháu trai',call:meBloodG==='male'?'Ông':'Bà',explain:'Cháu trai họ — cháu của anh/em họ bạn.'};
+        return{term:'Cháu gái',call:meBloodG==='male'?'Ông':'Bà',explain:'Cháu gái họ — cháu của anh/em họ bạn.'};
       }
       if(diff===3){
-        if(bloodPersonG==='male')return{term:'Chắt trai',call:'Ông Cố/Bà Cố',explain:'Chắt họ của bạn.'};
-        return{term:'Chắt gái',call:'Ông Cố/Bà Cố',explain:'Chắt họ của bạn.'};
+        if(bloodPersonG==='male')return{term:'Chắt trai',call:meBloodG==='male'?'Ông Cố':'Bà Cố',explain:'Chắt họ của bạn.'};
+        return{term:'Chắt gái',call:meBloodG==='male'?'Ông Cố':'Bà Cố',explain:'Chắt họ của bạn.'};
       }
       if(bloodPersonG==='male')return{term:'Hậu duệ',call:'Tổ tiên',explain:`Họ hàng bậc dưới — cách ${diff} đời.`};
       return{term:'Hậu duệ',call:'Tổ tiên',explain:`Họ hàng bậc dưới — cách ${diff} đời.`};
@@ -2636,6 +2718,7 @@ function computeXungHo(me,them){
   // Tính quan hệ blood trước
   const rel=bloodRel(upMe,downThem);
   if(!rel)return{term:'Không xác định',call:'',explain:'Chưa xác định được quan hệ.'};
+  const bloodRelTerm0=rel.term; // lưu term blood gốc trước khi spouseLabel override
 
   // ── Case 1: THEM là spouse (mợ/thím/dượng/dâu/rể...) ──
   // Điều chỉnh TERM (cách me gọi them)
@@ -2650,40 +2733,77 @@ function computeXungHo(me,them){
     const meBloodGender=map[meBloodId]?map[meBloodId].gender:'male';
     let meTitle=null;
 
-    // me là vợ (female) của người blood nam (chú/bác/cậu)
-    if(meBloodGender==='male'&&meG==='female'){
-      // So năm sinh meBlood vs brThem (cùng gen-2 của LCA)
-      // meBlood sinh sau brThem → meBlood là EM → Chú/Cậu → me là Thím/Mợ
-      // meBlood sinh trước brThem → meBlood là ANH → Bác/Cậu lớn → me là Bác gái
-      const meBloodB=parseInt(map[meBloodId]?map[meBloodId].birth:0)||0;
-      const brThemB=parseInt(brThem?brThem.birth:0)||0;
-      const nn=noiNgoaiThem(); // nội (ba cháu=nam) hoặc ngoại (mẹ cháu=nữ)
-      if(nn==='ngoại'){
-        // bên ngoại: vợ cậu → luôn là Mợ
-        meTitle='Mợ';
-      } else {
-        // bên nội: so năm sinh meBlood vs brThem (ba cháu)
-        // meBlood sinh trước brThem → meBlood là anh → Bác gái
-        // meBlood sinh sau  brThem → meBlood là em → Thím
-        meTitle=meBloodB>0&&brThemB>0&&meBloodB<brThemB?'Bác':'Thím';
+    // Nếu rel.term là anh/em/chị → dâu/rể của anh/em/chị → call đã đúng từ spouseLabel
+    const sibTerms=['Anh','Chị','Em trai','Em gái',
+      'Anh họ','Chị họ','Em họ','Anh (họ)','Chị (họ)','Em (họ)',
+      'Chị dâu','Anh rể','Chị dâu họ','Anh rể họ','Em dâu họ','Em rể họ'];
+    // Nếu rel.term là con → me là dâu/rể của con → xưng Con
+    const childTerms=['Con trai','Con gái'];
+    // Nếu rel.term là ba/mẹ/ông/bà → me là dâu/rể → xưng Con/Cháu
+    const parentTerms=['Ba','Mẹ','Ông Nội','Bà Nội','Ông Ngoại','Bà Ngoại','Ông','Bà','Ông Cố','Bà Cố'];
+
+    if(sibTerms.some(t=>rel.term.startsWith(t.split(' ')[0])&&rel.term.includes(t.split(' ').slice(-1)[0]))||sibTerms.includes(rel.term)){
+      // Anh/em/chị ↔ dâu/rể: call đã đúng, không override
+    } else if(childTerms.includes(rel.term)){
+      // Ba/mẹ gọi con dâu/rể: rel.call đã = 'Ba'/'Mẹ' ✓
+      // me là con dâu/rể xưng 'Con' với ba/mẹ chồng/vợ
+      meTitle='Con';
+    } else if(parentTerms.some(t=>rel.term===t)){
+      // me là con dâu/rể, them là ba/mẹ chồng/vợ → xưng Con
+      meTitle='Con';
+    } else if(meBloodGender==='male'&&meG==='female'){
+      // me là vợ của người blood nam
+      // Chỉ apply Thím/Mợ khi blood person là chú/bác/cậu trực tiếp của them
+      // tức là upMe===1 (me blood cách LCA 1 bậc) VÀ downThem===2 (them là cháu)
+      // Nếu blood person là anh/em/con/cháu → không apply
+      const isDirectUncle=upMe===1&&downThem>=2; // blood là chú/bác/cậu của them
+      if(isDirectUncle){
+        const nn=noiNgoaiThem();
+        if(nn==='ngoại'){
+          meTitle='Mợ';
+        } else {
+          const brMeB2=parseInt(brMe?brMe.birth:0)||0;
+          const brThemB2=parseInt(brThem?brThem.birth:0)||0;
+          const brMeOlderC2=brMeB2>0&&brThemB2>0?brMeB2<brThemB2:null;
+          meTitle=brMeOlderC2===null?'Thím':brMeOlderC2?'Bác':'Thím';
+        }
       }
-    }
-    // me là chồng (male) của người blood nữ (cô/dì)
-    else if(meBloodGender==='female'&&meG==='male'){
-      meTitle='Dượng';
-    }
-    // me là vợ/chồng của ba/mẹ trực tiếp (đã xử lý ở spouseLabel Ba/Mẹ, chỉ override nếu cần)
-    else if(rel.call==='Ba'||rel.call==='Mẹ'){
+      // else: cháu dâu gọi bác → xưng Cháu (không phải Thím)
+    } else if(meBloodGender==='female'&&meG==='male'){
+      // me là chồng của người blood nữ — chỉ apply Dượng khi là cô/dì trực tiếp
+      const isDirectAunt=upMe===1&&downThem>=2;
+      if(isDirectAunt) meTitle='Dượng';
+    } else if(rel.call==='Ba'||rel.call==='Mẹ'){
       const spouseCount=allPpl.filter(x=>x.spouse_of===meBloodId).length;
-      if(spouseCount>1){
-        meTitle=meG==='female'?'Mẹ kế':'Cha dượng';
-      } else {
-        meTitle=meG==='female'?'Mẹ':'Ba';
-      }
+      meTitle=spouseCount>1?(meG==='female'?'Mẹ kế':'Cha dượng'):(meG==='female'?'Mẹ':'Ba');
     }
 
     if(meTitle&&meTitle!==rel.call){
-      return Object.assign({},rel,{call:meTitle});
+      // Override explain for in-law cases (remove "ruột" etc)
+      let explainOverride=rel.explain||'';
+      if(meTitle==='Con'){
+        // Dùng bloodRelTerm0 (term blood gốc) vì rel.term có thể đã bị override thành 'Con'
+        const bloodPerson=map[meBloodId];
+        const isChong=bloodPerson?bloodPerson.gender==='male':true;
+        const parentTerms=['Ba','Mẹ','Ông Nội','Bà Nội','Ông Ngoại','Bà Ngoại','Ông','Bà'];
+        if(parentTerms.some(t=>bloodRelTerm0===t||rel.term===t)){
+          const tRef=bloodRelTerm0||rel.term;
+          if(tRef==='Ba')explainOverride=isChong?'Ba chồng của bạn.':'Ba vợ của bạn.';
+          else if(tRef==='Mẹ')explainOverride=isChong?'Mẹ chồng của bạn.':'Mẹ vợ của bạn.';
+          else if(tRef.includes('Ông'))explainOverride=isChong?'Ông chồng của bạn.':'Ông vợ của bạn.';
+          else if(tRef.includes('Bà'))explainOverride=isChong?'Bà chồng của bạn.':'Bà vợ của bạn.';
+          else explainOverride=isChong?'Họ hàng bên chồng.':'Họ hàng bên vợ.';
+        }
+      }
+      // Cháu dâu/rể gọi bác/chú/cô → call = danh xưng của me với them
+      if(meTitle==='Cháu'||rel.call===null){
+        // Lấy call từ bloodRelTerm0 ngược: bác gọi ta bằng Bác → ta gọi bác bằng Bác
+        meTitle=bloodRelTerm0||rel.term;
+        explainOverride=bloodRelTerm0==='Cháu trai'||bloodRelTerm0==='Cháu gái'
+          ?`${meG==='female'?'Cháu dâu':'Cháu rể'} — vợ/chồng của cháu ${meG==='female'?'trai':'gái'} của bạn.`
+          :explainOverride;
+      }
+      return Object.assign({},rel,{call:meTitle,explain:explainOverride});
     }
   }
 
