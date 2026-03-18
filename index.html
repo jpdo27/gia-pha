@@ -1626,6 +1626,14 @@ function switchView(mode){
   if(mode==='list')renderListView();
   if(mode==='xh')initXH();
   if(mode==='outline')renderOutline();
+  if(mode==='tree'){
+    // tree-wrap was display:none, zoom loses events — re-render and re-apply zoom
+    const cur=branchStack.length?branchStack[branchStack.length-1].data:rootTree;
+    if(cur||rootTree) setTimeout(()=>{
+      renderTree(cur||rootTree);
+      svg.call(zoom);
+    },30);
+  }
 }
 
 // ── PHOTO (localStorage) ──────────────────────────────────────
@@ -2901,9 +2909,10 @@ function toggleStyle(){
   treeStyle=treeStyle==='modern'?'classic':'modern';
   document.body.classList.toggle('classic',treeStyle==='classic');
   document.getElementById('vb-style').textContent=treeStyle==='classic'?'🖼':'🎨';
-  // Re-render with new style
   const cur=branchStack.length?branchStack[branchStack.length-1].data:rootTree;
   renderTree(cur||rootTree);
+  // Re-bind zoom after re-render
+  svg.call(zoom);
 }
 
 // ── MOBILE NAVIGATION ─────────────────────────────────────────
