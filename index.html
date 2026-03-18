@@ -399,7 +399,6 @@ hr.mdv{border:none;border-top:1px solid rgba(154,110,30,.2);margin:13px 0}
   #sub-row2{padding:3px 10px 5px}
   #tree-wrap,#list-wrap,#xh-wrap,#outline-wrap{bottom:56px}
   #bulletin{font-size:11px}
-  #app-credit{display:none}
   #ctrl{display:none!important}
   #legend{display:none!important}
   #fam-legend{display:none!important}
@@ -534,7 +533,8 @@ hr.mdv{border:none;border-top:1px solid rgba(154,110,30,.2);margin:13px 0}
 .fam-hero-role{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--gold);font-weight:600;margin-bottom:3px}
 .fam-hero-name{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--ink);line-height:1.25;margin-bottom:4px;word-break:break-word;overflow-wrap:break-word}
 .fam-hero-name.dead{color:var(--ink3)}
-.fam-hero-meta{font-size:13px;color:var(--ink2);line-height:1.7;overflow-wrap:normal;word-break:normal}
+.fam-hero-meta{font-size:13px;color:var(--ink2);line-height:1.7}
+.fam-hero-meta span{display:block}
 .fam-hero-dead-tag{display:inline-block;font-size:9px;background:rgba(30,18,8,.08);color:var(--ink3);padding:1px 5px;border-radius:5px;margin-left:6px;vertical-align:middle;font-family:'Open Sans',sans-serif;font-weight:400;letter-spacing:.2px}
 .fam-gen-section{margin-bottom:24px}
 .fam-gen-header{
@@ -569,7 +569,8 @@ hr.mdv{border:none;border-top:1px solid rgba(154,110,30,.2);margin:13px 0}
 .fam-child-name{font-family:'Playfair Display',serif;font-size:14.5px;font-weight:700;color:var(--ink);margin-bottom:2px;overflow-wrap:anywhere;line-height:1.35}
 .fam-child-name.dead{color:var(--ink3)}
 .fam-child-role{font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:2px}
-.fam-child-meta{font-size:12.5px;color:var(--ink2);line-height:1.5}
+.fam-child-meta{font-size:12.5px;color:var(--ink2);line-height:1.6}
+.fam-child-meta span{display:block}
 .fam-child-arrow{font-size:14px;color:var(--ink3);flex-shrink:0;align-self:center;transition:color .12s}
 .fam-child-card:hover .fam-child-arrow{color:var(--gold2)}
 .fam-child-card.no-children .fam-child-arrow{display:none}
@@ -690,6 +691,12 @@ const APP_VERSION = "1.0.0"; // cập nhật mỗi khi release
     <div id="fam-nav"></div>
     <div id="fam-root"></div>
     <div id="fam-sections"></div>
+    <div id="app-credit">
+      <span id="app-version"></span>
+      <span class="cr-dot">·</span>
+      <span>Powered by</span>
+      <span class="cr-claude">✦ Claude</span>
+    </div>
   </div>
 </div>
 <div id="tree-wrap" style="display:none">
@@ -809,12 +816,7 @@ const APP_VERSION = "1.0.0"; // cập nhật mỗi khi release
   <button class="cb" id="bZO">−</button>
   <button class="cb" id="bFit" style="font-size:13px">⊡</button>
 </div>
-<div id="app-credit">
-  <span id="app-version"></span>
-  <span class="cr-dot">·</span>
-  <span>Powered by</span>
-  <span class="cr-claude">✦ Claude</span>
-</div>
+
 <div id="legend">
   <div class="leg"><div class="ls" style="background:#ddeef5;border:1px solid #6aaac5"></div> Nam</div>
   <div class="leg"><div class="ls" style="background:#f5dde8;border:1px solid #c57a9a"></div> Nữ</div>
@@ -2692,7 +2694,8 @@ function makeFamHeroCard(person){
   metaEl.className = 'fam-hero-meta';
   const yr = person.birth || '';
   const dy = person.death ? ' – ' + person.death : (person.birth ? '' : '');
-  metaEl.textContent = [yr+dy, person.hometown, person.job].filter(Boolean).join(' · ');
+  const heroLines=[yr+dy, person.hometown, person.job].filter(Boolean);
+  metaEl.innerHTML=heroLines.map(l=>`<span>${l}</span>`).join('');
   info.appendChild(metaEl);
 
   card.appendChild(info);
@@ -2786,7 +2789,8 @@ function makeFamChildCard(person, isSpouse){
   metaEl.className = 'fam-child-meta';
   const yr = person.birth || '';
   const dy = person.death ? ' – ' + person.death : '';
-  metaEl.textContent = yr + dy + (dead ? ' (Đã mất)' : '');
+  const childLines=[yr+dy||(dead?'Đã mất':''), person.hometown, person.job].filter(Boolean);
+  metaEl.innerHTML=childLines.map(l=>`<span>${l}</span>`).join('');
   info.appendChild(metaEl);
 
   card.appendChild(info);
