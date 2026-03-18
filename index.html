@@ -399,6 +399,7 @@ hr.mdv{border:none;border-top:1px solid rgba(154,110,30,.2);margin:13px 0}
   #sub-row2{padding:3px 10px 5px}
   #tree-wrap,#list-wrap,#xh-wrap,#outline-wrap{bottom:56px}
   #bulletin{font-size:11px}
+  #app-credit{display:none}
   #ctrl{display:none!important}
   #legend{display:none!important}
   #fam-legend{display:none!important}
@@ -529,12 +530,12 @@ hr.mdv{border:none;border-top:1px solid rgba(154,110,30,.2);margin:13px 0}
 }
 .fam-hero-ava img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .fam-hero-ava.dead-ava{filter:grayscale(.5);border-color:var(--ink3)}
-.fam-hero-info{flex:1;min-width:0;overflow:hidden}
+.fam-hero-info{flex:1;min-width:0;overflow:hidden;min-width:0}
 .fam-hero-role{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--gold);font-weight:600;margin-bottom:3px}
 .fam-hero-name{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--ink);line-height:1.25;margin-bottom:4px;word-break:break-word;overflow-wrap:break-word}
 .fam-hero-name.dead{color:var(--ink3)}
-.fam-hero-meta{font-size:13px;color:var(--ink2);line-height:1.7;word-break:break-word;overflow-wrap:break-word}
-.fam-hero-dead-tag{display:inline-block;font-size:9px;background:rgba(30,18,8,.09);color:var(--ink3);padding:1px 6px;border-radius:5px;margin-left:5px;vertical-align:middle;font-family:'Open Sans',sans-serif}
+.fam-hero-meta{font-size:13px;color:var(--ink2);line-height:1.7;overflow-wrap:normal;word-break:normal}
+.fam-hero-dead-tag{display:inline-block;font-size:9px;background:rgba(30,18,8,.08);color:var(--ink3);padding:1px 5px;border-radius:5px;margin-left:6px;vertical-align:middle;font-family:'Open Sans',sans-serif;font-weight:400;letter-spacing:.2px}
 .fam-gen-section{margin-bottom:24px}
 .fam-gen-header{
   display:flex;align-items:center;gap:10px;margin-bottom:12px;cursor:pointer;
@@ -565,10 +566,10 @@ hr.mdv{border:none;border-top:1px solid rgba(154,110,30,.2);margin:13px 0}
 .fam-child-ava img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .fam-child-ava.dead-ava{filter:grayscale(.5)}
 .fam-child-info{flex:1;min-width:0;overflow:hidden}
-.fam-child-name{font-family:'Playfair Display',serif;font-size:14.5px;font-weight:700;color:var(--ink);margin-bottom:2px;overflow-wrap:break-word;word-break:break-word;line-height:1.35}
+.fam-child-name{font-family:'Playfair Display',serif;font-size:14.5px;font-weight:700;color:var(--ink);margin-bottom:2px;overflow-wrap:anywhere;line-height:1.35}
 .fam-child-name.dead{color:var(--ink3)}
 .fam-child-role{font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:2px}
-.fam-child-meta{font-size:12.5px;color:var(--ink2);line-height:1.5;word-break:break-word}
+.fam-child-meta{font-size:12.5px;color:var(--ink2);line-height:1.5}
 .fam-child-arrow{font-size:14px;color:var(--ink3);flex-shrink:0;align-self:center;transition:color .12s}
 .fam-child-card:hover .fam-child-arrow{color:var(--gold2)}
 .fam-child-card.no-children .fam-child-arrow{display:none}
@@ -603,6 +604,7 @@ hr.mdv{border:none;border-top:1px solid rgba(154,110,30,.2);margin:13px 0}
 <!-- ② THAY URL NÀY BẰNG URL CỦA APPS SCRIPT SAU KHI DEPLOY -->
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyg4fGgRr7XAJsUlhETlI4JQq9_AHMe1axo22lBGM-IQBrgF-s-r6MwxWujJ9pVeIcNjQ/exec";
+const APP_VERSION = "1.0.0"; // cập nhật mỗi khi release
 </script>
 
 <!-- Password gate -->
@@ -807,6 +809,12 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyg4fGgRr7XAJsUlhETl
   <button class="cb" id="bZO">−</button>
   <button class="cb" id="bFit" style="font-size:13px">⊡</button>
 </div>
+<div id="app-credit">
+  <span id="app-version"></span>
+  <span class="cr-dot">·</span>
+  <span>Powered by</span>
+  <span class="cr-claude">✦ Claude</span>
+</div>
 <div id="legend">
   <div class="leg"><div class="ls" style="background:#ddeef5;border:1px solid #6aaac5"></div> Nam</div>
   <div class="leg"><div class="ls" style="background:#f5dde8;border:1px solid #c57a9a"></div> Nữ</div>
@@ -846,7 +854,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyg4fGgRr7XAJsUlhETl
     <hr class="mdv">
     <div id="mnote"></div>
     <div id="mbtns">
-      <button class="mbtn pri" id="mbranch" onclick="viewBranch()">🌿 Xem nhánh gia đình này</button>
+      <button class="mbtn pri" id="mbranch" onclick="viewBranch()" style="display:none">🌿 Xem nhánh gia đình này</button>
       <button class="mbtn" onclick="toggleReq()">✏ Yêu cầu chỉnh sửa</button>
     </div>
     <div id="rform">
@@ -1037,11 +1045,36 @@ function renderTree(rootData){
 
   const isClassic=treeStyle==='classic';
   // In classic mode, use gen-aware node spacing
-  const dx=isClassic?CLASSIC_DX:260;
-  const dy=isClassic?CLASSIC_DY:190;
+  const dx=isClassic?CLASSIC_DX:320;
+  const dy=isClassic?CLASSIC_DY:200;
 
   const root=d3.hierarchy(rootData,d=>d.children&&d.children.length?d.children:null);
   d3.tree().nodeSize([dx,dy])(root);
+
+  // Post-process: shift siblings to the right when previous sibling has spouse(s)
+  // This prevents overlap between spouse cards and next sibling nodes
+  root.each(d=>{
+    if(!d.parent||!d.parent.children)return;
+    const siblings=d.parent.children;
+    const myIdx=siblings.indexOf(d);
+    if(myIdx<=0)return;
+    const prev=siblings[myIdx-1];
+    const prevSpouses=(prev.data.spouses||[]).length;
+    if(prevSpouses>0){
+      const prevCW=cw(prev.data);
+      const extraW=prevSpouses*(prevCW+SG); // width of spouse card(s)
+      const gap=20; // minimum gap
+      const prevRightEdge=prev.x+prevCW+extraW;
+      const myLeftEdge=d.x-cw(d.data)/2;
+      if(prevRightEdge+gap>myLeftEdge){
+        const shift=prevRightEdge+gap-myLeftEdge;
+        // Shift this node and all subsequent siblings + their subtrees
+        for(let i=myIdx;i<siblings.length;i++){
+          shiftSubtree(siblings[i],shift,0);
+        }
+      }
+    }
+  });
 
   // ── POST-PROCESS x-shift for siblings after multi-spouse nodes ──
   function shiftSubtree(d,ddx,ddy){d.x+=ddx;d.y+=ddy;if(d.children)d.children.forEach(c=>shiftSubtree(c,ddx,ddy));}
@@ -1304,7 +1337,7 @@ function mkCard(parent,person,cx,cy){
 }
 
 function splitN(n){if(n.length<=15)return[n];const ws=n.split(' '),m=Math.ceil(ws.length/2);return[ws.slice(0,m).join(' '),ws.slice(m).join(' ')];}
-function doFit(){const bb=g.node().getBBox();if(!bb.width)return;const s=Math.min((W*.86)/bb.width,(H*.82)/bb.height,.95);fitScale=s;fitTx=W/2-(bb.x+bb.width/2)*s;fitTy=68-bb.y*s;svg.call(zoom.transform,d3.zoomIdentity.translate(fitTx,fitTy).scale(s));}
+function doFit(){W=treeWrap.clientWidth||W;H=treeWrap.clientHeight||H;const bb=g.node().getBBox();if(!bb.width)return;const s=Math.min((W*.86)/bb.width,(H*.82)/bb.height,.95);fitScale=s;fitTx=W/2-(bb.x+bb.width/2)*s;fitTy=68-bb.y*s;svg.call(zoom.transform,d3.zoomIdentity.translate(fitTx,fitTy).scale(s));}
 
 let _firstLoad=true;
 function doFirstLand(){
@@ -1362,7 +1395,7 @@ function applyFilters(){
 }
 
 // ── BRANCH ──────────────────────────────────────────────────
-function findNodeInTree(id,n){if(!n)return null;if(n.id===id)return n;if(n.children){for(const c of n.children){const f=findNodeInTree(id,c);if(f)return f;}}return null;}
+function findNodeInTree(id,n){if(!n)return null;if(n.id===id)return n;if(n.spouses){for(const s of n.spouses){if(s.id===id)return n;}}if(n.children){for(const c of n.children){const f=findNodeInTree(id,c);if(f)return f;}}return null;}
 function viewBranch(){
   if(!currentPerson)return;
   // Nếu là vợ/chồng lấy về, dùng node của người blood (partner)
@@ -1375,7 +1408,8 @@ function viewBranch(){
     ?`${targetPerson?targetPerson.name:''} & ${currentPerson.name}`
     :currentPerson.name;
   branchStack.push({data:node,label:label});
-  updateBC();closeModal();renderTree(node);
+  updateBC();closeModal();
+  switchView('tree'); // switch to tree tab first so W/H are set correctly
 }
 function resetToRoot(){branchStack=[];updateBC();renderTree(rootTree);}
 function updateBC(){
@@ -1486,7 +1520,7 @@ function renderListView(){
     const rt=p._label?`<div class="lcard-role">${p._label}</div>`:"";
     const dead=p.death?" dead":"";
     const pid=p.id;
-    return `<div class="lcard${dead}${rc}" onclick="showModal(allPpl.find(x=>x.id===${JSON.stringify(pid)}))">
+    return `<div class="lcard${dead}${rc}" onclick="showModal(allPpl.find(x=>x.id==='${pid}'))">
       <div class="lcard-photo" style="background:${bg};color:#fff">${ph?`<img src="${ph}">`:""}${ph?"":ini.toUpperCase()}</div>
       <div class="lcard-body">${rt}
         <div class="lcard-name">${hl(p.name,currentSearchQ)}</div>
@@ -1541,9 +1575,14 @@ function switchView(mode){
   if(mode==='xh')initXH();
   if(mode==='outline')renderOutline();
   if(mode==='tree'){
-    // Re-render tree (was hidden while on other tabs)
-    const cur=branchStack.length?branchStack[branchStack.length-1].data:rootTree;
-    if(cur||rootTree) setTimeout(()=>renderTree(cur||rootTree),30);
+    // Update dimensions (tree-wrap was display:none at init so W/H=0)
+    setTimeout(()=>{
+      W=treeWrap.clientWidth||window.innerWidth;
+      H=treeWrap.clientHeight||(window.innerHeight-120);
+      svg.attr('width',W).attr('height',H);
+      const cur=branchStack.length?branchStack[branchStack.length-1].data:rootTree;
+      if(cur||rootTree) renderTree(cur||rootTree);
+    },30);
   }
 }
 
@@ -1835,6 +1874,8 @@ function getDateBlock(dateStr,labelSolar,labelLunar){
 
 // ── STATS ─────────────────────────────────────────────────────
 function updateStats(){
+  const verEl=document.getElementById('app-version');
+  if(verEl)verEl.textContent='v'+APP_VERSION;
   const genMap={};
   allPpl.forEach(p=>{
     if(p.spouse_of){const partner=allPpl.find(x=>x.id===p.spouse_of);genMap[p.id]=partner?parseInt(partner.gen||0):parseInt(p.gen||0);}
@@ -1848,6 +1889,14 @@ function updateStats(){
   const dead=ppl.length-alive;
   const el=document.getElementById('hdr-stats');
   if(el) el.innerHTML=`<b>${allPpl.length}</b> thành viên · <b>${alive}</b> còn sống <button class="sync-btn" onclick="loadData(true)" title="Tải lại">↻</button>`;
+
+  // Hide gen pills for generations with no members
+  const genCounts={};
+  allPpl.forEach(p=>{const g=genMap[p.id]||0;genCounts[g]=(genCounts[g]||0)+1;});
+  [5,6].forEach(g=>{
+    const btn=document.querySelector(`.gp[data-g="${g}"]`);
+    if(btn)btn.style.display=genCounts[g]?'':'none';
+  });
 }
 
 // ── MODAL ──────────────────────────────────────────────────────
@@ -1866,11 +1915,12 @@ function showModal(p){
   const _rows=[...birthBlk,...deathBlk,{l:'Quê quán',v:p.hometown||'—'},{l:'Nghề nghiệp',v:p.job||'—'}];
   document.getElementById('minfo').innerHTML=_rows.filter(x=>x.l).map(x=>`<div class="mi"><label>${x.l}</label><span>${x.v}</span></div>`).join('');
   document.getElementById('mnote').textContent=p.note||'Chưa có ghi chú.';
+  // Find tree node — returns blood node (even when p is spouse)
   const node=findNodeInTree(p.id,rootTree);
-  // Show branch button: blood node with children, OR spouse of someone with children
-  const bloodNodeForBranch=p.spouse_of?findNodeInTree(p.spouse_of,rootTree):node;
-  document.getElementById('mbranch').style.display=
-    (bloodNodeForBranch&&bloodNodeForBranch.children&&bloodNodeForBranch.children.length)?'':'none';
+  // For spouses, look up the blood partner's node directly
+  const bloodNode=p.spouse_of?findNodeInTree(p.spouse_of,rootTree):node;
+  // Always show branch button — even without children (shows their family context)
+  document.getElementById('mbranch').style.display='';
   document.getElementById('rform').style.display='none';
   document.getElementById('rf-name').value='';document.getElementById('rf-content').value='';document.getElementById('rf-email').value='';
   document.getElementById('mover').classList.add('on');
@@ -2774,12 +2824,14 @@ const CLASSIC_SIZES={
   5:{w:100,h:56,fs:10,dfs:9},
   6:{w:96, h:52,fs:10,dfs:8},
 };
-const CLASSIC_DX=240, CLASSIC_DY=180;
+const CLASSIC_DX=300, CLASSIC_DY=190;
 
 function toggleStyle(){
   treeStyle=treeStyle==='modern'?'classic':'modern';
-  document.body.classList.toggle('classic',treeStyle==='classic');
   document.getElementById('vb-style').textContent=treeStyle==='classic'?'🖼':'🎨';
+  W=treeWrap.clientWidth||window.innerWidth;
+  H=treeWrap.clientHeight||(window.innerHeight-120);
+  svg.attr('width',W).attr('height',H);
   const cur=branchStack.length?branchStack[branchStack.length-1].data:rootTree;
   renderTree(cur||rootTree);
 }
