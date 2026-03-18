@@ -1,4 +1,87 @@
 <!DOCTYPE html>
+<!--
+╔══════════════════════════════════════════════════════════════╗
+║         GIA PHẢ GIA ĐÌNH ÔNG BÀ CHÁNH THÁM                 ║
+╠══════════════════════════════════════════════════════════════╣
+║  Version  : 1.0.0                                           ║
+║  Built by : Claude Sonnet (Anthropic) — claude.ai           ║
+║  Stack    : Vanilla JS · D3.js · Google Sheets · Apps Script║
+║  Password : Stored server-side in Google Sheet > Config tab ║
+╚══════════════════════════════════════════════════════════════╝
+
+CHANGELOG
+─────────────────────────────────────────────────────────────
+
+v1.0.0 — 2025-03 — Initial Release
+  [Architecture]
+  · Single-file HTML app — no framework, no build step
+  · Google Sheets backend via Apps Script REST API
+  · Server-side password validation (?pw= param)
+  · Password stored in Sheet Config tab (no redeploy needed)
+  · SessionStorage cache for instant reload after first login
+  · Data schema: id, name, gender, birth_date, death_date,
+    hometown, job, note, gen, parent_id, spouse_of, co_parent_id
+
+  [Views & Navigation]
+  · Tab 1 — Gia đình: drill-down family view (default view)
+    - Hero cards for couple (ông/bà, cha/mẹ)
+    - Collapsible children section per generation
+    - Click blood node → drill into branch
+    - Click dâu/rể → drill into spouse's branch (if has children)
+    - Breadcrumb navigation
+  · Tab 2 — Tóm tắt: outline tree with stat cards
+    - 4 stat cards: thành viên / còn sống / đã mất / thế hệ
+    - Collapsible tree (default collapsed)
+    - Click row → detail panel (desktop) or full-width (mobile)
+  · Tab 3 — Danh sách: grid card list
+    - Role filter pills (Con / Cháu nội / Cháu ngoại / Dâu / Rể)
+    - Click card → modal detail with branch button
+  · Tab 4 — Xưng hô: Vietnamese kinship calculator
+    - Searchable name inputs (no-accent matching)
+    - Computes: term + call + explain for any 2 people
+    - Handles: direct line, siblings, cousins, in-laws
+    - Supports: thím / mợ / dượng / bác gái swap directions
+    - Seniority by gen-2 ancestor birth year (not individual)
+  · Tab 5 — 🌳 Cây: D3.js tree (modern + classic styles)
+    - Pan/zoom (mouse drag + scroll wheel + pinch)
+    - Floating style toggle button
+    - Post-process sibling shift to prevent spouse overlap
+    - Fit-to-screen on render
+
+  [Privacy & Display]
+  · Year-only display for birth/death (full date stored for lunar calc)
+  · Password gate UI on first load (server validates, never exposed)
+
+  [Features]
+  · Bulletin strip (gold bar, top of page)
+    - Shows sinh nhật + giỗ for current month
+    - Giỗ converted from solar → lunar → back to solar this year
+    - Click → popup with 1 or 2-column layout
+    - Times computed in Vietnam timezone (Asia/Ho_Chi_Minh)
+  · Lunar calendar (Hồ Ngọc Đức algorithm)
+    - Solar ↔ Lunar conversion
+    - Can Chi year display
+  · Status filter (Tất cả / Còn sống / Đã mất) — always visible
+  · Gen filter pills (Đời 1–6, hide if no members)
+  · No-accent search (gõ không dấu vẫn match)
+  · Modal detail: photo, dates (DL+ÂL), quê, nghề, ghi chú
+    - Edit request form (submitted to Requests sheet tab)
+    - Xem nhánh button (always shown)
+  · Multiple spouses supported (co_parent_id routing)
+  · Role colors: Cháu nội=gold / Cháu ngoại=green / Dâu=pink / Rể=orange
+
+  [Mobile]
+  · Bottom tab bar (5 tabs)
+  · Search sheet (fullscreen)
+  · Stack layout for hero cards
+  · Stat strip above outline tree
+
+  [Data / Apps Script]
+  · Config tab: password + family_name (editable without redeploy)
+  · Members tab: 12-column schema
+  · Requests tab: auto-created, color-coded on status change
+  · Date columns forced to Text format (prevent Google Date coercion)
+-->
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
@@ -691,12 +774,7 @@ const APP_VERSION = "1.0.0"; // cập nhật mỗi khi release
     <div id="fam-nav"></div>
     <div id="fam-root"></div>
     <div id="fam-sections"></div>
-    <div id="app-credit">
-      <span id="app-version"></span>
-      <span class="cr-dot">·</span>
-      <span>Powered by</span>
-      <span class="cr-claude">✦ Claude</span>
-    </div>
+
   </div>
 </div>
 <div id="tree-wrap" style="display:none">
@@ -1876,8 +1954,6 @@ function getDateBlock(dateStr,labelSolar,labelLunar){
 
 // ── STATS ─────────────────────────────────────────────────────
 function updateStats(){
-  const verEl=document.getElementById('app-version');
-  if(verEl)verEl.textContent='v'+APP_VERSION;
   const genMap={};
   allPpl.forEach(p=>{
     if(p.spouse_of){const partner=allPpl.find(x=>x.id===p.spouse_of);genMap[p.id]=partner?parseInt(partner.gen||0):parseInt(p.gen||0);}
