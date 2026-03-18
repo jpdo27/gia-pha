@@ -23,6 +23,7 @@
   --gold-light:rgba(184,134,42,.12);
   --hdr:52px;
   --sub:40px;
+  --sub2:0px;
   --radius-sm:6px;
   --radius-md:10px;
   --radius-lg:16px;
@@ -88,11 +89,14 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 /* ── Sub-bar: breadcrumb + gen filter ── */
 #sub{
-  position:fixed;top:var(--hdr);left:0;right:0;height:var(--sub);
+  position:fixed;top:var(--hdr);left:0;right:0;
   background:rgba(30,18,8,.88);backdrop-filter:blur(6px);
-  display:flex;align-items:center;gap:8px;padding:0 14px;z-index:49;
+  display:flex;flex-direction:column;z-index:49;
   border-bottom:1px solid rgba(201,149,42,.2)
 }
+#sub-row1{display:flex;align-items:center;gap:8px;padding:0 14px;height:var(--sub);flex-shrink:0}
+#sub-row2{display:flex;align-items:center;padding:4px 14px 6px;gap:6px;border-top:1px solid rgba(201,149,42,.1)}
+#sub-row2.hidden{display:none}
 #breadcrumb{flex:1;display:flex;align-items:center;gap:4px;overflow:hidden;min-width:0}
 /* Status filter — always visible in sub-bar */
 #status-filter{display:flex;gap:3px;flex-shrink:0;margin-left:4px}
@@ -124,11 +128,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .gp:not(.on):hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.8)}
 
 /* ── Content areas ── */
-#tree-wrap{position:fixed;top:calc(var(--hdr) + var(--sub));left:0;right:0;bottom:0}
+#tree-wrap{position:fixed;top:calc(var(--hdr) + var(--sub) + var(--sub2));left:0;right:0;bottom:0}
 #tree-svg{width:100%;height:100%;cursor:grab;display:block}
 #tree-svg:active{cursor:grabbing}
 
-#list-wrap{position:fixed;top:calc(var(--hdr) + var(--sub));left:0;right:0;bottom:0;overflow-y:auto;display:none;padding:16px 20px 20px}
+#list-wrap{position:fixed;top:calc(var(--hdr) + var(--sub) + var(--sub2));left:0;right:0;bottom:0;overflow-y:auto;display:none;padding:16px 20px 20px}
 #list-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;max-width:1280px;margin:0 auto}
 
 /* List cards */
@@ -183,7 +187,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #list-empty{display:none;text-align:center;padding:60px 20px;color:var(--ink3);font-style:italic;font-size:14px}
 
 /* ── Xưng hô ── */
-#xh-wrap{position:fixed;top:calc(var(--hdr) + var(--sub));left:0;right:0;bottom:0;overflow-y:auto;display:none;padding:24px 20px}
+#xh-wrap{position:fixed;top:calc(var(--hdr) + var(--sub) + var(--sub2));left:0;right:0;bottom:0;overflow-y:auto;display:none;padding:24px 20px}
 #xh-inner{max-width:620px;margin:0 auto}
 #xh-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--ink);margin-bottom:4px;font-weight:700}
 #xh-sub{font-size:13px;color:var(--ink2);margin-bottom:20px;line-height:1.6}
@@ -218,7 +222,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #xh-legend b{color:var(--ink);font-weight:600}
 
 /* ── Outline ── */
-#outline-wrap{position:fixed;top:calc(var(--hdr) + var(--sub));left:0;right:0;bottom:0;display:none;overflow:hidden}
+#outline-wrap{position:fixed;top:calc(var(--hdr) + var(--sub) + var(--sub2));left:0;right:0;bottom:0;display:none;overflow:hidden}
 #outline-left{position:absolute;top:0;left:0;bottom:0;width:50%;overflow-y:auto;border-right:1px solid rgba(154,110,30,.2);background:var(--paper)}
 #outline-right{
   position:absolute;top:0;left:50%;right:0;bottom:0;
@@ -240,6 +244,20 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .od-stat-label{font-size:11px;color:var(--ink2);margin-top:4px;text-transform:uppercase;letter-spacing:.6px}
 .od-stat-alive{color:#2a7a3c}
 .od-stat-dead{color:var(--ink3)}
+/* Stats strip at top of outline left panel */
+#outline-top-stats{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:0;
+  border-bottom:1px solid rgba(154,110,30,.15);flex-shrink:0
+}
+.ots-item{
+  padding:10px 8px;text-align:center;
+  border-right:1px solid rgba(154,110,30,.1)
+}
+.ots-item:last-child{border-right:none}
+.ots-num{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--ink);line-height:1}
+.ots-label{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.ots-alive{color:#2a7a3c}
+.ots-dead{color:var(--ink3)}
 #outline-right-detail{padding:0 24px 28px;width:100%;max-width:460px}
 /* outline rows */
 .ol-node{padding:0}
@@ -417,10 +435,11 @@ hr.mdv{border:none;border-top:1px solid rgba(154,110,30,.2);margin:13px 0}
   #hdr-title{font-size:14px;letter-spacing:1px;flex:1}
   #hdr-divider,#search-wrap,#view-btns,#hdr-stats{display:none}
   #mob-search-icon{display:flex!important}
-  #sub{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 10px}
+  #sub-row1{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 10px}
   #breadcrumb{display:none}
   #gen-pills{gap:4px;flex-shrink:0}
   .gp{font-size:12px;padding:5px 10px}
+  #sub-row2{padding:3px 10px 5px}
   #tree-wrap,#list-wrap,#xh-wrap,#outline-wrap{bottom:56px}
   #ctrl{display:none!important}
   #legend{display:none!important}
@@ -455,7 +474,7 @@ hr.mdv{border:none;border-top:1px solid rgba(154,110,30,.2);margin:13px 0}
 ::-webkit-scrollbar-thumb:hover{background:rgba(154,110,30,.5)}
 
 /* ── Gia đình (family drill-down) view ── */
-#family-wrap{position:fixed;top:calc(var(--hdr) + var(--sub));left:0;right:0;bottom:0;overflow-y:auto;display:block;background:var(--bg)}
+#family-wrap{position:fixed;top:calc(var(--hdr) + var(--sub) + var(--sub2));left:0;right:0;bottom:0;overflow-y:auto;display:block;background:var(--bg)}
 #family-inner{max-width:760px;margin:0 auto;padding:20px 16px 40px}
 
 /* breadcrumb nav specific to family view */
@@ -545,13 +564,38 @@ hr.mdv{border:none;border-top:1px solid rgba(154,110,30,.2);margin:13px 0}
   .fam-hero-name{font-size:15px}
 }
 </style>
+<style>
+#pw-gate{position:fixed;inset:0;background:var(--ink);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px}
+#pw-box{background:rgba(255,255,255,.06);border:1px solid rgba(201,149,42,.3);border-radius:20px;padding:36px 32px;max-width:380px;width:100%;text-align:center}
+#pw-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--gold3);margin-bottom:6px;font-weight:700}
+#pw-sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:28px;line-height:1.6}
+#pw-icon{font-size:42px;margin-bottom:18px}
+#pw-inp{width:100%;padding:12px 16px;border-radius:12px;border:1.5px solid rgba(201,149,42,.4);background:rgba(255,255,255,.08);color:#fff;font-family:'Open Sans',sans-serif;font-size:16px;outline:none;text-align:center;letter-spacing:3px;margin-bottom:14px;transition:border-color .2s}
+#pw-inp:focus{border-color:var(--gold2)}
+#pw-inp::placeholder{letter-spacing:0;color:rgba(255,255,255,.3);font-size:13px}
+#pw-btn{width:100%;padding:12px;border-radius:12px;border:none;background:var(--gold2);color:var(--ink);font-family:'Open Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
+#pw-btn:hover{background:var(--gold3)}
+#pw-err{font-size:12px;color:#e07070;margin-top:10px;min-height:18px}
+</style>
 </head>
 <body>
 
 <!-- ② THAY URL NÀY BẰNG URL CỦA APPS SCRIPT SAU KHI DEPLOY -->
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztVlH-nHquUdOZtrzA0P7ncYKU6nzX2CQSA5BsHnaXptaGFpOAgYa5lDxpnie79_6zXw/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyg4fGgRr7XAJsUlhETlI4JQq9_AHMe1axo22lBGM-IQBrgF-s-r6MwxWujJ9pVeIcNjQ/exec";
 </script>
+
+<!-- Password gate -->
+<div id="pw-gate">
+  <div id="pw-box">
+    <div id="pw-icon">🔒</div>
+    <div id="pw-title">GIA PHẢ GIA ĐÌNH<br>ÔNG BÀ CHÁNH THÁM</div>
+    <div id="pw-sub">Vui lòng nhập mật khẩu để truy cập</div>
+    <input id="pw-inp" type="password" placeholder="Nhập mật khẩu…" onkeydown="if(event.key==='Enter')checkPw()">
+    <button id="pw-btn" onclick="checkPw()">Vào xem →</button>
+    <div id="pw-err"></div>
+  </div>
+</div>
 
 <!-- Loading overlay -->
 <div id="overlay">
@@ -583,17 +627,20 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztVlH-nHquUdOZtrzA0
 </div>
 
 <div id="sub">
-  <div id="breadcrumb"><span class="bc-item bc-root" onclick="resetToRoot()">🏠 Toàn bộ</span></div>
-  <div id="gen-pills">
-    <button class="gp on" data-g="0" onclick="filterGen(0)">Tất cả</button>
-    <button class="gp" data-g="1" onclick="filterGen(1)">Đời 1</button>
-    <button class="gp" data-g="2" onclick="filterGen(2)">Đời 2</button>
-    <button class="gp" data-g="3" onclick="filterGen(3)">Đời 3</button>
-    <button class="gp" data-g="4" onclick="filterGen(4)">Đời 4</button>
-    <button class="gp" data-g="5" onclick="filterGen(5)">Đời 5</button>
-    <button class="gp" data-g="6" onclick="filterGen(6)">Đời 6</button>
+  <div id="sub-row1">
+    <div id="breadcrumb"><span class="bc-item bc-root" onclick="resetToRoot()">🏠 Toàn bộ</span></div>
+    <div id="gen-pills">
+      <button class="gp on" data-g="0" onclick="filterGen(0)">Tất cả</button>
+      <button class="gp" data-g="1" onclick="filterGen(1)">Đời 1</button>
+      <button class="gp" data-g="2" onclick="filterGen(2)">Đời 2</button>
+      <button class="gp" data-g="3" onclick="filterGen(3)">Đời 3</button>
+      <button class="gp" data-g="4" onclick="filterGen(4)">Đời 4</button>
+      <button class="gp" data-g="5" onclick="filterGen(5)">Đời 5</button>
+      <button class="gp" data-g="6" onclick="filterGen(6)">Đời 6</button>
+    </div>
   </div>
-  <div id="status-filter">
+  <div id="sub-row2">
+    <span style="font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.6px;flex-shrink:0">Lọc:</span>
     <button class="sf on-all" id="sf-all"   onclick="filterStatus('all')">Tất cả</button>
     <button class="sf" id="sf-alive" onclick="filterStatus('alive')">Còn sống</button>
     <button class="sf" id="sf-dead"  onclick="filterStatus('dead')">Đã mất</button>
@@ -650,7 +697,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztVlH-nHquUdOZtrzA0
 <!-- Outline panel -->
 <div id="outline-wrap">
   <div id="outline-left">
-    <div id="outline-mob-stats" style="display:none;padding:10px 14px 4px;border-bottom:1px solid rgba(154,110,30,.15)"></div>
+    <div id="outline-top-stats"></div>
     <div id="outline-tree" style="padding:8px 0"></div>
   </div>
   <div id="outline-right">
@@ -783,7 +830,7 @@ let fitTx=0,fitTy=0,fitScale=1;
 // ============================================================
 // LOAD DATA FROM APPS SCRIPT
 // ============================================================
-async function loadData(silent=false){
+async function loadData(silent=false, pw=null){
   if(!silent){
     document.getElementById('overlay').classList.remove('gone');
     document.getElementById('ol-spinner').style.display='block';
@@ -808,7 +855,8 @@ async function loadData(silent=false){
     const timer=setTimeout(()=>ctrl.abort(),20000);
     let resp;
     try{
-      resp=await fetch(SCRIPT_URL+'?t='+Date.now(),{signal:ctrl.signal});
+      const _storedPw=sessionStorage.getItem(PW_KEY)||'';
+    resp=await fetch(SCRIPT_URL+'?pw='+encodeURIComponent(_storedPw)+'&t='+Date.now(),{signal:ctrl.signal});
     }catch(fetchErr){
       if(fetchErr.name==='AbortError')throw new Error('Timeout — Apps Script mất quá 20 giây. Kiểm tra lại URL và quyền deploy.');
       throw new Error('Không kết nối được Apps Script. Nếu mở bằng file://, hãy dùng Live Server hoặc python -m http.server 8080. Chi tiết: '+fetchErr.message);
@@ -816,15 +864,31 @@ async function loadData(silent=false){
 
     if(!resp.ok)throw new Error('HTTP '+resp.status+' — Apps Script trả về lỗi. Kiểm tra URL deploy.');
 
-    let rows;
-    try{rows=await resp.json();}
+    let raw,rows,serverConfig={};
+    try{raw=await resp.json();}
     catch(e){throw new Error('Dữ liệu trả về không phải JSON hợp lệ. Có thể Apps Script đang redirect về trang login — kiểm tra Who has access = Anyone.');}
 
-    if(!Array.isArray(rows)){
-      if(rows&&rows.error)throw new Error('Apps Script báo lỗi: '+rows.error);
-      throw new Error('Dữ liệu không đúng định dạng. Sheet "Members" có thể chưa có dữ liệu hoặc header sai. Nhận được: '+JSON.stringify(rows).substring(0,120));
+    if(raw&&raw.error==='WRONG_PASSWORD'){
+      // Session pw expired or changed — clear and show gate again
+      sessionStorage.removeItem(PW_KEY);
+      document.getElementById('pw-gate').style.display='flex';
+      document.getElementById('pw-err').textContent='Mật khẩu đã thay đổi. Vui lòng nhập lại.';
+      if(syncBtn)syncBtn.classList.remove('spin');
+      return;
     }
-    if(rows.length===0)throw new Error('Sheet "Members" trống — chưa có dữ liệu. Vui lòng nhập dữ liệu vào sheet trước.');
+    if(Array.isArray(raw)){
+      rows=raw; // legacy
+    } else if(raw&&raw.ok&&Array.isArray(raw.members)){
+      rows=raw.members;
+      if(raw.familyName){
+        document.getElementById('hdr-title').textContent='GIA PHẢ '+raw.familyName.toUpperCase();
+        document.title='Gia Phả '+raw.familyName;
+      }
+    } else {
+      if(raw&&raw.error)throw new Error('Apps Script: '+raw.msg||raw.error);
+      throw new Error('Dữ liệu không đúng định dạng. Nhận được: '+JSON.stringify(raw).substring(0,120));
+    }
+    if(!rows.length)throw new Error('Sheet "Members" trống — chưa có dữ liệu.');
 
     allPpl=normalizeRows(rows);
     rootTree=buildTree(allPpl);
@@ -834,6 +898,12 @@ async function loadData(silent=false){
     document.title='Gia Phả Gia Đình Ông Bà Chánh Thám';
     updateStats();
     switchView('family');  // default first view
+  // Init sub2 height
+  setTimeout(()=>{
+    const row2=document.getElementById('sub-row2');
+    const h=row2?row2.offsetHeight:0;
+    document.documentElement.style.setProperty('--sub2',h+'px');
+  },50);
     // Still build tree in background so it's ready when user switches
     setTimeout(()=>renderTree(rootTree), 200);
     document.getElementById('overlay').classList.add('gone');
@@ -1391,17 +1461,25 @@ function switchView(mode){
   document.getElementById('list-wrap').style.display=mode==='list'?'block':'none';
   document.getElementById('xh-wrap').style.display=mode==='xh'?'block':'none';
   document.getElementById('outline-wrap').style.display=mode==='outline'?'block':'none';
-  document.getElementById('ctrl').style.display=mode==='tree'?'flex':'none';
-  document.getElementById('legend').style.display=mode==='tree'?'flex':'none';
-  document.getElementById('fam-legend').style.display=mode==='family'?'flex':'none';
+  const _ctrl=document.getElementById('ctrl');if(_ctrl)_ctrl.style.display=mode==='tree'?'flex':'none';
+  const _leg=document.getElementById('legend');if(_leg)_leg.style.display=mode==='tree'?'flex':'none';
+  const _fleg=document.getElementById('fam-legend');if(_fleg)_fleg.style.display=mode==='family'?'flex':'none';
   // Gen pills only useful for tree+list
-  // gen-pills only shown on tree/list; status filter always visible
+  // gen-pills only on tree/list
   const showSub=mode==='tree'||mode==='list';
-  const genPills=document.getElementById('gen-pills');
-  if(genPills)genPills.style.display=showSub?'flex':'none';
-  // breadcrumb only on tree
+  const row1=document.getElementById('sub-row1');
+  if(row1)row1.style.display=showSub?'flex':'none';
   const bc=document.getElementById('breadcrumb');
   if(bc)bc.style.display=mode==='tree'?'flex':'none';
+  // sub-row2 (status filter) always visible
+  // Update --sub var: if row1 hidden, content shifts up
+  document.documentElement.style.setProperty('--sub', showSub?'40px':'0px');
+  // Update sub2 height to match row2 actual height
+  setTimeout(()=>{
+    const row2=document.getElementById('sub-row2');
+    const h=row2?row2.offsetHeight:0;
+    document.documentElement.style.setProperty('--sub2',h+'px');
+  },0);
   const styleBtn=document.getElementById('vb-style');
   if(styleBtn)styleBtn.style.display=mode==='tree'?'inline-block':'none';
   if(mode==='family')renderFamilyView();
@@ -1539,6 +1617,10 @@ function parseDateStr(s){
 }
 function extractYear(s){
   const p=parseDateStr(s);return p?String(p.y):null;
+}
+// Display year only (privacy mode — full date stored but only year shown)
+function displayYear(s){
+  const p=parseDateStr(s);return p?String(p.y):(s||'');
 }
 // Chạy sau khi fetch: tự suy birth và death từ birth_date và death_date
 function normalizeRows(rows){
@@ -1847,7 +1929,22 @@ function calcXH(){
   const them=allPpl.find(x=>x.id===themId);
   if(!me||!them)return;
 
-  const result=computeXungHo(me,them);
+  let result;
+  try{
+    result=computeXungHo(me,them);
+  }catch(err){
+    console.error('[XH Error]',err);
+    termEl.style.fontSize='14px';termEl.style.fontWeight='400';termEl.style.color='var(--ink3)';
+    termEl.textContent='Lỗi: '+err.message;
+    callEl.textContent='';expEl.textContent='';swapBtn.style.display='none';
+    return;
+  }
+  if(!result||!result.term){
+    termEl.style.fontSize='14px';termEl.style.fontWeight='400';termEl.style.color='var(--ink3)';
+    termEl.textContent='Không xác định được quan hệ.';
+    callEl.textContent='';expEl.textContent='';swapBtn.style.display='none';
+    return;
+  }
   termEl.style.fontSize='38px';termEl.style.fontWeight='700';termEl.style.color='var(--ink)';
   termEl.textContent=result.term;
   callEl.textContent=result.call?'Bạn gọi là "'+result.term+'" · Xưng là "'+result.call+'"':'';
@@ -1863,8 +1960,10 @@ function computeXungHo(me,them){
   const themIsSpouse=!!them.spouse_of;
   const meG=me.gender;
   const themG=them.gender; // giới tính thực của them (kể cả dâu/rể)
-  // Giới tính của blood person (dùng cho bloodRel để tính chú/bác/cô...)
+  // Giới tính của blood person them (dùng cho bloodRel để tính chú/bác/cô...)
   const bloodPersonG=themIsSpouse?(map[themBloodId]?map[themBloodId].gender:them.gender):them.gender;
+  // Giới tính blood partner của me (khi me là dượng/thím/mợ → dùng gender của cô/chú/cậu để tính call)
+  const meBloodG=meIsSpouse?(map[meBloodId]?map[meBloodId].gender:me.gender):me.gender;
 
   // ── Vợ/chồng trực tiếp: kiểm tra TRƯỚC khi tính LCA ──
   // me gọi them là vợ/chồng
@@ -2054,13 +2153,13 @@ function computeXungHo(me,them){
     if(u===0){
       if(d===1){
         return bloodPersonG==='male'
-          ?{term:'Con trai',call:meG==='male'?'Ba':'Mẹ',explain:'Con trai ruột của bạn.'}
-          :{term:'Con gái',call:meG==='male'?'Ba':'Mẹ',explain:'Con gái ruột của bạn.'};
+          ?{term:'Con trai',call:meBloodG==='male'?'Ba':'Mẹ',explain:'Con trai ruột của bạn.'}
+          :{term:'Con gái',call:meBloodG==='male'?'Ba':'Mẹ',explain:'Con gái ruột của bạn.'};
       }
       if(d===2){
         return bloodPersonG==='male'
-          ?{term:'Cháu trai',call:meG==='male'?'Ông':'Bà',explain:'Cháu trai ruột của bạn.'}
-          :{term:'Cháu gái',call:meG==='male'?'Ông':'Bà',explain:'Cháu gái ruột của bạn.'};
+          ?{term:'Cháu trai',call:meBloodG==='male'?'Ông':'Bà',explain:'Cháu trai ruột của bạn.'}
+          :{term:'Cháu gái',call:meBloodG==='male'?'Ông':'Bà',explain:'Cháu gái ruột của bạn.'};
       }
       if(d===3){
         return bloodPersonG==='male'
@@ -2230,14 +2329,48 @@ function computeXungHo(me,them){
 
   // Tính quan hệ blood trước
   const rel=bloodRel(upMe,downThem);
+  if(!rel)return{term:'Không xác định',call:'',explain:'Chưa xác định được quan hệ.'};
 
-  // Nếu them là spouse, điều chỉnh cách gọi
+  // ── Case 1: THEM là spouse (mợ/thím/dượng/dâu/rể...) ──
+  // Điều chỉnh TERM (cách me gọi them)
   if(themIsSpouse&&rel){
     const adj=spouseLabel(rel.term,themBloodId&&map[themBloodId]?map[themBloodId].gender:'male',themG);
     if(adj)return Object.assign({},rel,adj,{explain:adj.explain||rel.explain||''});
   }
 
-  return rel||{term:'Không xác định',call:'',explain:'Chưa xác định được quan hệ.'};
+  // ── Case 2: ME là spouse (khi swap — me là mợ/thím/dượng/dâu/rể...) ──
+  // Tính trực tiếp danh xưng của me dựa vào: meBloodG + bên nội/ngoại + meG
+  if(meIsSpouse&&rel){
+    const meBloodGender=map[meBloodId]?map[meBloodId].gender:'male';
+    let meTitle=null;
+
+    // me là vợ (female) của người blood nam (chú/bác/cậu)
+    if(meBloodGender==='male'&&meG==='female'){
+      const nn=noiNgoaiMe();
+      // bên nội: vợ của chú/bác → Thím
+      // bên ngoại: vợ của cậu → Mợ
+      meTitle=nn==='ngoại'?'Mợ':'Thím';
+    }
+    // me là chồng (male) của người blood nữ (cô/dì)
+    else if(meBloodGender==='female'&&meG==='male'){
+      meTitle='Dượng';
+    }
+    // me là vợ/chồng của ba/mẹ trực tiếp (đã xử lý ở spouseLabel Ba/Mẹ, chỉ override nếu cần)
+    else if(rel.call==='Ba'||rel.call==='Mẹ'){
+      const spouseCount=allPpl.filter(x=>x.spouse_of===meBloodId).length;
+      if(spouseCount>1){
+        meTitle=meG==='female'?'Mẹ kế':'Cha dượng';
+      } else {
+        meTitle=meG==='female'?'Mẹ':'Ba';
+      }
+    }
+
+    if(meTitle&&meTitle!==rel.call){
+      return Object.assign({},rel,{call:meTitle});
+    }
+  }
+
+  return rel;
 }
 
 
@@ -2595,6 +2728,21 @@ function renderOutline(){
       {n:gens,l:'Thế hệ',c:''},
     ].map(s=>`<div class="od-stat-card"><div class="od-stat-num ${s.c}">${s.n}</div><div class="od-stat-label">${s.l}</div></div>`).join('');
   }
+
+  // Stats strip above tree (visible on mobile + desktop left panel)
+  const ts=document.getElementById('outline-top-stats');
+  if(ts){
+    const total2=allPpl.length;
+    const alive2=allPpl.filter(p=>!p.death).length;
+    const dead2=total2-alive2;
+    const gens2=[...new Set(allPpl.filter(p=>!p.spouse_of).map(p=>p.gen).filter(Boolean))].length;
+    ts.innerHTML=[
+      {n:total2,l:'Thành viên',c:''},
+      {n:alive2,l:'Còn sống',c:'ots-alive'},
+      {n:dead2,l:'Đã mất',c:'ots-dead'},
+      {n:gens2,l:'Thế hệ',c:''},
+    ].map(s=>`<div class="ots-item"><div class="ots-num ${s.c}">${s.n}</div><div class="ots-label">${s.l}</div></div>`).join('');
+  }
 }
 
 // ancestors: array of booleans — whether each ancestor level still has more siblings below
@@ -2807,8 +2955,71 @@ function viewBranchFromOutline(){
 }
 
 
+// ── PASSWORD GATE ─────────────────────────────────────────────
+// Password được lưu và kiểm tra server-side trong Google Sheet (tab Config)
+// Không cần đổi gì trong code này — chỉ cần đổi ô B2 trong tab Config của Sheet
+const PW_KEY = 'gp_auth';
+
+async function checkPw(){
+  const val=document.getElementById('pw-inp').value.trim();
+  if(!val)return;
+  const btn=document.getElementById('pw-btn');
+  btn.textContent='Đang kiểm tra…';btn.disabled=true;
+  try{
+    const r=await fetch(SCRIPT_URL+'?pw='+encodeURIComponent(val),{signal:AbortSignal.timeout(12000)});
+    const data=await r.json();
+    if(data.ok){
+      sessionStorage.setItem(PW_KEY,val); // store pw for reload
+      document.getElementById('pw-gate').style.display='none';
+      // data already has members — process it
+      processData(data);
+    } else {
+      const errEl=document.getElementById('pw-err');
+      errEl.textContent='Mật khẩu không đúng. Thử lại.';
+      document.getElementById('pw-inp').value='';
+      document.getElementById('pw-inp').focus();
+      setTimeout(()=>errEl.textContent='',3000);
+    }
+  }catch(e){
+    document.getElementById('pw-err').textContent='Lỗi kết nối. Kiểm tra mạng rồi thử lại.';
+  }
+  btn.textContent='Vào xem →';btn.disabled=false;
+}
+
+function initAuth(){
+  const storedPw=sessionStorage.getItem(PW_KEY);
+  if(storedPw){
+    // Already authenticated this session — reload with stored pw
+    document.getElementById('pw-gate').style.display='none';
+    loadData(false, storedPw);
+    return;
+  }
+  // Show gate
+}
+
+// ── processData: dùng khi đã có data từ checkPw ─────────────
+function processData(data){
+  const rows=data.members||[];
+  if(data.familyName){
+    document.getElementById('hdr-title').textContent='GIA PHẢ '+data.familyName.toUpperCase();
+    document.title='Gia Phả '+data.familyName;
+  }
+  allPpl=normalizeRows(rows);
+  rootTree=buildTree(allPpl);
+  if(!rootTree){showErr('Không tìm được người đời 1. Kiểm tra lại cột gen và parent_id.');return;}
+  updateStats();
+  switchView('family');
+  setTimeout(()=>{
+    const row2=document.getElementById('sub-row2');
+    const h=row2?row2.offsetHeight:0;
+    document.documentElement.style.setProperty('--sub2',h+'px');
+  },50);
+  setTimeout(()=>renderTree(rootTree),200);
+  document.getElementById('overlay').classList.add('gone');
+}
+
 // ── INIT ──────────────────────────────────────────────────────
-loadData();
+initAuth();
 </script>
 </body>
 </html>
