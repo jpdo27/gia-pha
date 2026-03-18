@@ -650,6 +650,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztVlH-nHquUdOZtrzA0
 <!-- Outline panel -->
 <div id="outline-wrap">
   <div id="outline-left">
+    <div id="outline-mob-stats" style="display:none;padding:10px 14px 4px;border-bottom:1px solid rgba(154,110,30,.15)"></div>
     <div id="outline-tree" style="padding:8px 0"></div>
   </div>
   <div id="outline-right">
@@ -2199,11 +2200,18 @@ function computeXungHo(me,them){
       const diff=d-u;
 
       if(diff===1){
-        // Them cùng đời con me, nhưng là con của anh/em me
-        const nn=noiNgoaiMe();
-        const call=meG==='male'?'Chú/Bác/Cậu':'Cô/Dì/Cô';
-        if(bloodPersonG==='male')return{term:'Cháu trai',call,explain:`Cháu trai họ — con của anh/em họ bên ${nn||'nội/ngoại'} của bạn.`};
-        return{term:'Cháu gái',call,explain:`Cháu gái họ — con của anh/em họ bên ${nn||'nội/ngoại'} của bạn.`};
+        // Them cùng đời con me, là con của anh/em me
+        const nn=noiNgoaiMe(); // 'nội' hoặc 'ngoại' từ góc nhìn của me
+        // Xác định call cụ thể dựa vào giới tính me và bên nội/ngoại
+        let call;
+        if(meG==='male'){
+          call=nn==='nội'?'Chú / Bác':'Cậu'; // bên nội gọi chú/bác, bên ngoại gọi cậu
+        } else {
+          call=nn==='nội'?'Cô':'Dì'; // bên nội gọi cô, bên ngoại gọi dì
+        }
+        const side=nn?`bên ${nn}`:'';
+        if(bloodPersonG==='male')return{term:'Cháu trai',call,explain:`Cháu trai họ ${side} — con của anh/em họ của bạn.`};
+        return{term:'Cháu gái',call,explain:`Cháu gái họ ${side} — con của anh/em họ của bạn.`};
       }
       if(diff===2){
         if(bloodPersonG==='male')return{term:'Cháu trai',call:'Ông/Bà',explain:'Cháu trai họ — cháu của anh/em họ bạn.'};
