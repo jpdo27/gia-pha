@@ -7,10 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <style>
-/* ── Reset ── */
 *{box-sizing:border-box;margin:0;padding:0}
-
-/* ── Design tokens ── */
 :root{
   --bg:#f5ede0;
   --paper:#fdf9f2;
@@ -34,13 +31,8 @@
   --connector:#c9952a;
   --connector-dim:rgba(201,149,42,.35);
 }
-
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Open Sans',Georgia,sans-serif;color:var(--ink);font-size:15px;line-height:1.55}
-
-/* Paper texture */
 body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
-
-/* ── Header ── */
 #hdr{
   position:fixed;top:var(--bul);left:0;right:0;height:var(--hdr);
   background:var(--ink);display:flex;align-items:center;
@@ -53,8 +45,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   white-space:nowrap;flex-shrink:0
 }
 #hdr-divider{width:1px;height:22px;background:rgba(255,255,255,.15);flex-shrink:0}
-
-/* Tab buttons */
 #view-btns{display:flex;gap:2px;flex-shrink:0}
 .vb{
   padding:5px 11px;border:1px solid transparent;border-radius:var(--radius-sm);
@@ -66,8 +56,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .vb:not(.on):hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.8)}
 #vb-style{opacity:.6;font-size:14px;padding:5px 8px}
 #vb-style:hover{opacity:1}
-
-/* Search in header */
 #search-wrap{flex:1;max-width:280px;position:relative}
 #search-inp{
   width:100%;padding:6px 10px 6px 30px;
@@ -79,16 +67,12 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #search-inp:focus{background:rgba(255,255,255,.16);border-color:rgba(201,149,42,.6)}
 #si{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:rgba(255,255,255,.35);pointer-events:none}
 #sc{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.45);cursor:pointer;font-size:13px;display:none;line-height:1}
-
-/* Header right: stats */
 #hdr-stats{font-size:12px;color:rgba(255,255,255,.5);white-space:nowrap;flex-shrink:0;text-align:right;line-height:1.6}
 #hdr-stats b{color:var(--gold3);font-weight:600}
 .sync-btn{background:none;border:none;color:rgba(255,255,255,.45);cursor:pointer;font-size:13px;margin-left:4px;opacity:.7}
 .sync-btn:hover{opacity:1}
 .sync-btn.spin{animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* ── Sub-bar: breadcrumb + gen filter ── */
 #sub{
   position:fixed;top:calc(var(--bul) + var(--hdr));left:0;right:0;
   background:rgba(30,18,8,.88);backdrop-filter:blur(6px);
@@ -99,7 +83,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #sub-row2{display:flex;align-items:center;padding:4px 14px 6px;gap:6px;border-top:1px solid rgba(201,149,42,.1)}
 #sub-row2.hidden{display:none}
 #breadcrumb{flex:1;display:flex;align-items:center;gap:4px;overflow:hidden;min-width:0}
-/* Status filter — always visible in sub-bar */
 #status-filter{display:flex;gap:3px;flex-shrink:0;margin-left:4px}
 .sf{
   padding:5px 11px;border:1px solid rgba(255,255,255,.15);border-radius:12px;
@@ -127,16 +110,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 }
 .gp.on{background:var(--gold2);border-color:var(--gold2);color:#fff;font-weight:600}
 .gp:not(.on):hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.8)}
-
-/* ── Content areas ── */
 #tree-wrap{position:fixed;top:calc(var(--hdr) + var(--bul) + var(--sub) + var(--sub2));left:0;right:0;bottom:0}
 #tree-svg{width:100%;height:100%;cursor:grab;display:block}
 #tree-svg:active{cursor:grabbing}
-
 #list-wrap{position:fixed;top:calc(var(--hdr) + var(--bul) + var(--sub) + var(--sub2));left:0;right:0;bottom:0;overflow-y:auto;display:none;padding:16px 20px 20px}
 #list-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;max-width:1280px;margin:0 auto}
-
-/* List cards */
 .lcard{
   background:var(--paper);border-radius:var(--radius-lg);overflow:hidden;
   cursor:pointer;transition:transform .15s,box-shadow .15s;
@@ -161,7 +139,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .lcard.dead .lcard-photo{opacity:.55}
 .lcard.dead .lcard-name{color:var(--ink3)}
 .lcard.dead .lcard-name::after{content:' (đã mất)';font-size:9px;font-weight:400;color:var(--ink3)}
-/* role photo colors */
 .role-chau-noi .lcard-photo{background:linear-gradient(135deg,#c8a000,#a07800)!important}
 .role-chau-ngoai .lcard-photo{background:linear-gradient(135deg,#3a9a5c,#1e7a3e)!important}
 .role-dau .lcard-photo{background:linear-gradient(135deg,#d46090,#a83468)!important}
@@ -171,8 +148,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .role-chau-ngoai .lcard-role{background:#eaf3de;color:#2a5c11}
 .role-dau .lcard-role{background:#fbeaf0;color:#8a2545}
 .role-re .lcard-role{background:#fff0e8;color:#7a3a08}
-
-/* List stats + role pills */
 #list-stats{max-width:1280px;margin:0 auto;padding:10px 0 4px;font-size:12px;color:var(--ink2);display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 #list-stats b{color:var(--ink);font-weight:600}
 #list-stats .stat-alive{color:#2a7a3c;font-weight:600}
@@ -186,8 +161,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .rp.on{background:var(--gold2);border-color:var(--gold2);color:#fff;font-weight:600}
 .rp:not(.on):hover{background:var(--gold-light)}
 #list-empty{display:none;text-align:center;padding:60px 20px;color:var(--ink3);font-style:italic;font-size:14px}
-
-/* ── Xưng hô ── */
 #xh-wrap{position:fixed;top:calc(var(--hdr) + var(--bul) + var(--sub) + var(--sub2));left:0;right:0;bottom:0;overflow-y:auto;display:none;padding:24px 20px}
 #xh-inner{max-width:620px;margin:0 auto}
 #xh-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--ink);margin-bottom:4px;font-weight:700}
@@ -238,8 +211,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #xh-swap:hover{background:var(--gold2);color:#fff;border-color:var(--gold2)}
 #xh-legend{margin-top:20px;padding:14px 18px;background:var(--gold-light);border-radius:var(--radius-md);font-size:12.5px;color:var(--ink2);line-height:2}
 #xh-legend b{color:var(--ink);font-weight:600}
-
-/* ── Outline ── */
 #outline-wrap{position:fixed;top:calc(var(--hdr) + var(--bul) + var(--sub) + var(--sub2));left:0;right:0;bottom:0;display:none;overflow:hidden}
 #outline-left{position:absolute;top:0;left:0;bottom:0;width:50%;overflow-y:auto;border-right:1px solid rgba(154,110,30,.2);background:var(--paper)}
 #outline-right{
@@ -262,7 +233,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .od-stat-label{font-size:11px;color:var(--ink2);margin-top:4px;text-transform:uppercase;letter-spacing:.6px}
 .od-stat-alive{color:#2a7a3c}
 .od-stat-dead{color:var(--ink3)}
-/* Stats strip at top of outline left panel */
 #outline-top-stats{
   display:grid;grid-template-columns:repeat(4,1fr);gap:0;
   border-bottom:1px solid rgba(154,110,30,.15);flex-shrink:0
@@ -277,7 +247,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .ots-alive{color:#2a7a3c}
 .ots-dead{color:var(--ink3)}
 #outline-right-detail{padding:0 24px 28px;width:100%;max-width:460px}
-/* outline rows */
 .ol-node{padding:0}
 .ol-row{
   display:flex;align-items:center;min-height:46px;cursor:pointer;
@@ -320,7 +289,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .ol-role{font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:2px 5px;border-radius:4px;flex-shrink:0;white-space:nowrap}
 .ol-children{display:block}
 .ol-children.collapsed{display:none}
-/* outline right detail */
 #od-top{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;padding:24px 0 16px;border-bottom:1px solid rgba(154,110,30,.18)}
 #od-ava{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;border:2.5px solid var(--gold2);overflow:hidden;position:relative;flex-shrink:0}
 #od-ava img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -338,8 +306,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .od-btn:hover{background:var(--gold-light)}
 .od-btn.pri{background:var(--gold2);border-color:var(--gold2);color:#fff}
 .od-btn.pri:hover{background:var(--ink);border-color:var(--ink)}
-
-/* ── Legend ── */
 #legend,#fam-legend{
   position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
   background:rgba(30,18,8,.82);color:var(--gold3);font-size:12px;
@@ -349,8 +315,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 }
 .leg{display:flex;align-items:center;gap:5px}
 .ls{width:10px;height:10px;border-radius:2px;flex-shrink:0}
-
-/* ── Zoom controls ── */
 #ctrl{position:fixed;bottom:16px;right:14px;display:flex;flex-direction:column;gap:6px;z-index:50}
 .cb{
   width:36px;height:36px;background:rgba(30,18,8,.78);color:var(--gold3);
@@ -359,19 +323,12 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   transition:all .14s;box-shadow:var(--shadow-sm);backdrop-filter:blur(6px)
 }
 .cb:hover{background:var(--gold2);color:#fff;border-color:var(--gold2)}
-
-/* ── Stats (desktop, bottom-left) ── */
-#stats{display:none}
-
-/* ── Overlay / Error ── */
 #overlay{position:fixed;inset:0;background:var(--bg);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;transition:opacity .4s}
 #overlay.gone{opacity:0;pointer-events:none}
 #ol-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--ink);margin-bottom:8px}
 #ol-sub{font-size:13px;color:var(--ink2);line-height:1.8;max-width:440px}
 #ol-spinner{width:34px;height:34px;border:3px solid rgba(154,110,30,.25);border-top-color:var(--gold2);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:14px}
 code{background:rgba(30,18,8,.07);padding:2px 7px;border-radius:4px;font-size:12px}
-
-/* ── Search dropdown ── */
 #sdrop{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--paper);border-radius:var(--radius-md);box-shadow:var(--shadow-lg);z-index:200;max-height:260px;overflow-y:auto;display:none;border:1px solid rgba(154,110,30,.15)}
 .sdi{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;border-bottom:1px solid rgba(154,110,30,.08);transition:background .1s}
 .sdi:last-child{border:none}
@@ -379,8 +336,6 @@ code{background:rgba(30,18,8,.07);padding:2px 7px;border-radius:4px;font-size:12
 .sda{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;position:relative;overflow:hidden}
 .sda img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 mark{background:rgba(201,149,42,.28);color:var(--ink);border-radius:2px;padding:0 2px}
-
-/* ── Modal ── */
 #mover{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
 #mover.on{opacity:1;pointer-events:all}
 #modal{
@@ -418,22 +373,8 @@ hr.mdv{border:none;border-top:1px solid rgba(154,110,30,.2);margin:13px 0}
 #rsend{width:100%;padding:9px;background:var(--gold2);border:none;border-radius:var(--radius-sm);color:#fff;font-family:'Open Sans',sans-serif;font-size:13px;cursor:pointer;font-weight:600;transition:background .15s;margin-top:4px}
 #rsend:hover{background:var(--ink)}
 #rsend:disabled{opacity:.5;cursor:not-allowed}
-
-/* ── Hint ── */
 #hint{position:fixed;top:calc(var(--bul)+var(--hdr)+var(--sub)+10px);left:50%;transform:translateX(-50%);background:rgba(30,18,8,.8);color:var(--gold3);font-size:12px;padding:6px 16px;border-radius:16px;z-index:50;pointer-events:none;transition:opacity 1.2s;white-space:nowrap}
 #hint.gone{opacity:0}
-/* gesture guide */
-#gesture-guide{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:55;display:flex;gap:20px;pointer-events:none;opacity:0;transition:opacity .5s}
-#gesture-guide.show{opacity:1}
-.gg-item{display:flex;flex-direction:column;align-items:center;gap:5px}
-.gg-icon{width:42px;height:42px;background:rgba(30,18,8,.72);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:20px;backdrop-filter:blur(4px)}
-.gg-label{font-size:10px;color:rgba(255,255,255,.75);background:rgba(30,18,8,.68);padding:3px 7px;border-radius:6px;white-space:nowrap;font-family:'Open Sans',sans-serif;backdrop-filter:blur(4px)}
-@keyframes ggPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
-.gg-icon{animation:ggPulse 1.8s ease-in-out infinite}
-.gg-item:nth-child(2) .gg-icon{animation-delay:.3s}
-.gg-item:nth-child(3) .gg-icon{animation-delay:.6s}
-
-/* ── Mobile ── */
 #mob-bar{display:none;position:fixed;bottom:0;left:0;right:0;height:56px;background:var(--ink);z-index:60;border-top:1px solid rgba(201,149,42,.18);align-items:stretch}
 .mbt{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:transparent;color:rgba(255,255,255,.4);cursor:pointer;padding:6px 2px;font-family:'Open Sans',sans-serif;font-size:9px;letter-spacing:.2px;transition:color .14s}
 .mbt.on{color:var(--gold3)}
@@ -445,8 +386,6 @@ hr.mdv{border:none;border-top:1px solid rgba(154,110,30,.2);margin:13px 0}
 #mob-search-close{align-self:flex-end;background:none;border:none;color:var(--gold3);font-size:13px;cursor:pointer;font-family:'Open Sans',sans-serif}
 #mob-sdrop{background:var(--paper);border-radius:var(--radius-md);max-height:55vh;overflow-y:auto;display:none}
 #mob-si{position:absolute;left:26px;top:50%;transform:translateY(-50%);font-size:13px;color:rgba(255,255,255,.35);pointer-events:none}
-
-/* Mobile responsive */
 @media(max-width:640px){
   :root{--hdr:50px;--sub:42px}
   #hdr{padding:0 12px;gap:8px}
@@ -478,15 +417,12 @@ hr.mdv{border:none;border-top:1px solid rgba(154,110,30,.2);margin:13px 0}
   #xh-term{font-size:28px}
   #outline-left{width:100%;border-right:none}
   #outline-right{display:none}
-  #gesture-guide{bottom:68px}
 }
 @media(min-width:641px){
   #mob-bar{display:none!important}
   #mob-search{display:none!important}
   #mob-search-icon{display:none!important}
 }
-
-/* ── Bulletin strip ── */
 #bulletin{
   position:fixed;top:0;left:0;right:0;z-index:60;
   background:linear-gradient(90deg,#c8940a,#e8b830,#c8940a);
@@ -518,7 +454,6 @@ hr.mdv{border:none;border-top:1px solid rgba(154,110,30,.2);margin:13px 0}
   transition:transform .25s;margin-left:4px
 }
 #bulletin.expanded #bulletin-bar .bl-toggle{transform:rotate(180deg)}
-/* Bulletin popup */
 #bl-popup-over{
   position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;
   display:flex;align-items:flex-start;justify-content:center;
@@ -566,30 +501,17 @@ hr.mdv{border:none;border-top:1px solid rgba(154,110,30,.2);margin:13px 0}
 .bl-name{font-size:14px;color:var(--ink);flex:1;font-family:'Playfair Display',serif;font-weight:700;line-height:1.3}
 .bl-sub{font-size:11.5px;color:var(--ink3);margin-top:2px}
 .bl-empty{font-size:13px;color:var(--ink3);font-style:italic;padding:6px 0}
-
-/* Push content down by bulletin height */
-#bulletin-spacer{height:32px;transition:height .25s}
-#bulletin.expanded~* #bulletin-spacer,
-#bulletin.expanded+#sub{margin-top:0}
-
-/* Scrollbar */
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(154,110,30,.3);border-radius:2px}
 ::-webkit-scrollbar-thumb:hover{background:rgba(154,110,30,.5)}
-
-/* ── Gia đình (family drill-down) view ── */
 #family-wrap{position:fixed;top:calc(var(--hdr) + var(--bul) + var(--sub) + var(--sub2));left:0;right:0;bottom:0;overflow-y:auto;display:block;background:var(--bg)}
 #family-inner{max-width:760px;margin:0 auto;padding:20px 16px 40px}
-
-/* breadcrumb nav specific to family view */
 #fam-nav{display:flex;align-items:center;gap:6px;padding:0 0 16px;flex-wrap:wrap}
 .fam-bc{font-size:13px;color:var(--gold);cursor:pointer;padding:4px 10px;border-radius:16px;border:1px solid rgba(154,110,30,.3);background:var(--paper);transition:all .14s;font-family:'Open Sans',sans-serif}
 .fam-bc:hover{background:var(--gold-light)}
 .fam-bc.active{background:var(--gold2);border-color:var(--gold2);color:#fff;cursor:default}
 .fam-bc-sep{color:var(--ink3);font-size:12px}
-
-/* Root couple card — big hero */
 #fam-root{margin-bottom:28px}
 .fam-couple{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
 .fam-hero-card{
@@ -613,8 +535,6 @@ hr.mdv{border:none;border-top:1px solid rgba(154,110,30,.2);margin:13px 0}
 .fam-hero-name.dead{color:var(--ink3)}
 .fam-hero-meta{font-size:13px;color:var(--ink2);line-height:1.7;word-break:break-word;overflow-wrap:break-word}
 .fam-hero-dead-tag{display:inline-block;font-size:9px;background:rgba(30,18,8,.09);color:var(--ink3);padding:1px 6px;border-radius:5px;margin-left:5px;vertical-align:middle;font-family:'Open Sans',sans-serif}
-
-/* Generation section */
 .fam-gen-section{margin-bottom:24px}
 .fam-gen-header{
   display:flex;align-items:center;gap:10px;margin-bottom:12px;cursor:pointer;
@@ -630,8 +550,6 @@ hr.mdv{border:none;border-top:1px solid rgba(154,110,30,.2);margin:13px 0}
 .fam-gen-tog.closed{transform:rotate(-90deg)}
 .fam-gen-body{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
 .fam-gen-body.collapsed{display:none}
-
-/* Child card */
 .fam-child-card{
   background:var(--paper);border-radius:var(--radius-md);padding:12px 14px;
   border:1px solid rgba(154,110,30,.18);box-shadow:var(--shadow-sm);
@@ -654,13 +572,10 @@ hr.mdv{border:none;border-top:1px solid rgba(154,110,30,.2);margin:13px 0}
 .fam-child-arrow{font-size:14px;color:var(--ink3);flex-shrink:0;align-self:center;transition:color .12s}
 .fam-child-card:hover .fam-child-arrow{color:var(--gold2)}
 .fam-child-card.no-children .fam-child-arrow{display:none}
-
-/* Role badge colors on child card */
 .fam-child-card.role-dau .fam-child-ava{border-color:#d46090}
 .fam-child-card.role-re .fam-child-ava{border-color:#d4782a}
 .fam-child-card.role-chau-noi .fam-child-ava{border-color:#c8a000}
 .fam-child-card.role-chau-ngoai .fam-child-ava{border-color:#3a9a5c}
-
 @media(max-width:640px){
   #family-inner{padding:14px 10px 56px}
   .fam-couple{flex-direction:column}
@@ -706,7 +621,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyg4fGgRr7XAJsUlhETl
 <div id="overlay">
   <div id="ol-spinner"></div>
   <div id="ol-title">Đang tải gia phả…</div>
-  <div id="ol-sub" id="ol-sub"></div>
+  <div id="ol-sub"></div>
 </div>
 
 <!-- Header -->
@@ -719,7 +634,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyg4fGgRr7XAJsUlhETl
     <button class="vb" id="vb-list" onclick="switchView('list')">Danh sách</button>
     <button class="vb" id="vb-xh" onclick="switchView('xh')">Xưng hô</button>
     <button class="vb" id="vb-tree" onclick="switchView('tree')">🌳 Cây</button>
-    <button class="vb" id="vb-style" onclick="toggleStyle()" title="Đổi kiểu hiển thị cây" style="display:none">🎨</button>
   </div>
   <div id="search-wrap">
     <span id="si">🔍</span>
@@ -776,7 +690,16 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyg4fGgRr7XAJsUlhETl
     <div id="fam-sections"></div>
   </div>
 </div>
-<div id="tree-wrap" style="display:none"><svg id="tree-svg"></svg></div>
+<div id="tree-wrap" style="display:none">
+  <svg id="tree-svg"></svg>
+  <button id="vb-style" onclick="toggleStyle()" title="Đổi kiểu hiển thị cây"
+    style="position:absolute;top:12px;right:14px;z-index:10;background:rgba(30,18,8,.75);
+    border:1px solid rgba(201,149,42,.3);border-radius:20px;color:var(--gold3);
+    font-size:13px;padding:6px 14px;cursor:pointer;backdrop-filter:blur(4px);
+    font-family:'Open Sans',sans-serif;transition:all .15s">
+    🎨 Đổi kiểu
+  </button>
+</div>
 <div id="list-wrap">
   <div id="list-stats"></div>
   <div id="role-pills">
@@ -821,8 +744,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyg4fGgRr7XAJsUlhETl
     </div>
   </div>
 </div>
-
-
 
 <!-- Outline panel -->
 <div id="outline-wrap">
@@ -906,7 +827,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyg4fGgRr7XAJsUlhETl
   <div class="leg"><span style="font-size:11px;color:var(--gold3)">› = có con cháu</span></div>
 </div>
 <div id="hint" style="display:none"></div>
-
 
 <div id="mover">
   <div id="modal">
@@ -1039,13 +959,12 @@ async function loadData(silent=false, pw=null){
     const h=row2?row2.offsetHeight:0;
     document.documentElement.style.setProperty('--sub2',h+'px');
   },50);
-    // Still build tree in background so it's ready when user switches
-    setTimeout(()=>renderTree(rootTree), 200);
+      setTimeout(()=>renderTree(rootTree), 200);
     document.getElementById('overlay').classList.add('gone');
   }catch(err){
     console.error('[GIA PHẢ]',err);
     if(!silent)showErr(err.message);
-    else console.warn('Silent reload failed:',err.message);
+    else console.warn('Silent reload failed:', err.message);
   }
   if(syncBtn)syncBtn.classList.remove('spin');
 }
@@ -1115,7 +1034,6 @@ const ROLE_COLORS={
 function renderTree(rootData){
   g.selectAll('*').remove();
   if(!rootData)return;
-  svg.call(zoom); // re-apply zoom after content cleared
 
   const isClassic=treeStyle==='classic';
   // In classic mode, use gen-aware node spacing
@@ -1253,8 +1171,7 @@ function renderTree(rootData){
   });
 
   applyFilters();
-  if(_firstLoad&&viewMode==='tree'){_firstLoad=false;setTimeout(doFirstLand,80);if(viewMode!=='tree')_firstLoad=false;}
-  else doFit();
+  doFit();
 }
 
 function cardSize(gen){
@@ -1369,7 +1286,6 @@ function mkCard(parent,person,cx,cy){
       cg.append('text').attr('x',9).attr('y',19).attr('font-size','13px')
         .attr('fill',bd).attr('font-family','serif').text(male?'♂':'♀');
     }
-
 
     const pts=splitN(person.name),nx=photo?38:W2/2,na=photo?'start':'middle';
     cg.append('text').attr('x',nx).attr('y',pts.length>1?21:27)
@@ -1585,7 +1501,6 @@ function renderListView(){
   }).join("");
 }
 
-
 // ── VIEW SWITCH ───────────────────────────────────────────────
 function switchView(mode){
   viewMode=mode;
@@ -1620,19 +1535,15 @@ function switchView(mode){
     const h=row2?row2.offsetHeight:0;
     document.documentElement.style.setProperty('--sub2',h+'px');
   },0);
-  const styleBtn=document.getElementById('vb-style');
-  if(styleBtn)styleBtn.style.display=mode==='tree'?'inline-block':'none';
+
   if(mode==='family')renderFamilyView();
   if(mode==='list')renderListView();
   if(mode==='xh')initXH();
   if(mode==='outline')renderOutline();
   if(mode==='tree'){
-    // tree-wrap was display:none, zoom loses events — re-render and re-apply zoom
+    // Re-render tree (was hidden while on other tabs)
     const cur=branchStack.length?branchStack[branchStack.length-1].data:rootTree;
-    if(cur||rootTree) setTimeout(()=>{
-      renderTree(cur||rootTree);
-      svg.call(zoom);
-    },30);
+    if(cur||rootTree) setTimeout(()=>renderTree(cur||rootTree),30);
   }
 }
 
@@ -1762,16 +1673,7 @@ function lunarToSolar(lunarDay,lunarMonth,lunarYear,lunarLeap){
 }
 
 // Julian day number → {dd,mm,yy}
-function jdToDate(jd){
-  let a,b,c,d,e,m,y;
-  a=INT(jd+0.5);b=a+32044;c=INT((4*b+3)/146097);
-  d=b-INT(146097*c/4);e=INT((4*d+3)/1461);
-  const f=d-INT(1461*e/4);m=INT((5*f+2)/153);
-  const dd=f-INT((153*m+2)/5)+1;
-  const mm=m+3-12*INT(m/10);
-  const yy=100*c+e-4800+INT(m/10);
-  return{d:dd,m:mm,y:yy};
-}
+
 function formatLunar(l){
   if(!l)return'';
   const leap=l.leap?'(nhuận)':'';
@@ -1794,9 +1696,6 @@ function extractYear(s){
   const p=parseDateStr(s);return p?String(p.y):null;
 }
 // Display year only (privacy mode — full date stored but only year shown)
-function displayYear(s){
-  const p=parseDateStr(s);return p?String(p.y):(s||'');
-}
 // Chạy sau khi fetch: tự suy birth và death từ birth_date và death_date
 function normalizeRows(rows){
   const genderMap={'male':'male','female':'female','nam':'male','nu':'female','nữ':'female','m':'male','f':'female','1':'male','0':'female'};
@@ -2014,21 +1913,7 @@ document.getElementById('bZO').addEventListener('click',()=>svg.transition().dur
 document.getElementById('bFit').addEventListener('click',()=>svg.transition().duration(360).call(zoom.transform,d3.zoomIdentity.translate(fitTx,fitTy).scale(fitScale)));
 setTimeout(()=>document.getElementById('hint').classList.add('gone'),5500);
 
-function showGestureGuide(){
-  const g=document.getElementById('gesture-guide');
-  if(!g)return;
-  // Show after zoom-out animation completes
-  setTimeout(()=>{
-    g.classList.add('show');
-    // Hide after 4s
-    setTimeout(()=>{
-      g.classList.remove('show');
-      g.classList.add('hide');
-    },4000);
-  },2200);
-}
 window.addEventListener('resize',()=>{W=treeWrap.clientWidth;H=treeWrap.clientHeight;svg.attr('width',W).attr('height',H);doFit();});
-
 
 // ── XƯNG HÔ ───────────────────────────────────────────────────
 // Xây dựng quan hệ giữa 2 người dựa vào cây, trả về cách gọi
@@ -2122,13 +2007,6 @@ function pathToRoot(id,node,path=[]){
 function bloodId(p){return p.spouse_of||p.id;}
 
 // Tìm LCA (lowest common ancestor) trong cây máu
-function findLCA(id1,id2){
-  const p1=pathToRoot(bloodId(allPpl.find(x=>x.id===id1)||{}),rootTree)||[];
-  const p2=pathToRoot(bloodId(allPpl.find(x=>x.id===id2)||{}),rootTree)||[];
-  const set1=new Set(p1.map(n=>n.id));
-  for(const n of p2){if(set1.has(n.id))return n;}
-  return null;
-}
 
 function calcXH(){
   const meId=document.getElementById('xh-me').value;
@@ -2320,12 +2198,6 @@ function computeXungHo(me,them){
 
     // Xác định me đi qua nhánh nội hay ngoại khi đến LCA
     // → "me thuộc bên nội LCA" nếu toàn bộ path từ me lên LCA đi qua nam
-    function pathGender(path,fromDepth,toLcaDepth){
-      // gender của node ngay dưới LCA trên đường từ LCA xuống người kia
-      const lcaIdx=toLcaDepth;
-      if(lcaIdx>=path.length-1)return null;
-      return path[lcaIdx+1].gender; // node ngay sau LCA
-    }
     // brMe/brThem defined in outer scope
 
     // Tên tổ tiên chung theo level
@@ -2664,7 +2536,6 @@ function computeXungHo(me,them){
   return rel;
 }
 
-
 // ── FAMILY DRILL-DOWN VIEW ─────────────────────────────────────
 let famStack = []; // stack of node objects drilled into
 
@@ -2911,8 +2782,6 @@ function toggleStyle(){
   document.getElementById('vb-style').textContent=treeStyle==='classic'?'🖼':'🎨';
   const cur=branchStack.length?branchStack[branchStack.length-1].data:rootTree;
   renderTree(cur||rootTree);
-  // Re-bind zoom after re-render
-  svg.call(zoom);
 }
 
 // ── MOBILE NAVIGATION ─────────────────────────────────────────
@@ -2964,7 +2833,6 @@ function mobPickRes(id){
   closeMobSearch();
   if(p)showModal(p);
 }
-
 
 // ── OUTLINE (TÓM TẮT) ──────────────────────────────────────────
 
@@ -3245,7 +3113,6 @@ function viewBranchFromOutline(){
   const p=allPpl.find(x=>x.id===outlineSelectedId);
   if(p){currentPerson=p;viewBranch();switchView('tree');}
 }
-
 
 // ── PASSWORD GATE ─────────────────────────────────────────────
 // Password được lưu và kiểm tra server-side trong Google Sheet (tab Config)
