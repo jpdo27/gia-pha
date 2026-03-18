@@ -1478,18 +1478,32 @@ function applyFilters(){
 function findNodeInTree(id,n){if(!n)return null;if(n.id===id)return n;if(n.spouses){for(const s of n.spouses){if(s.id===id)return n;}}if(n.children){for(const c of n.children){const f=findNodeInTree(id,c);if(f)return f;}}return null;}
 function viewBranch(){
   if(!currentPerson)return;
-  // Nếu là vợ/chồng lấy về, dùng node của người blood (partner)
   const targetId=currentPerson.spouse_of||currentPerson.id;
   const targetPerson=currentPerson.spouse_of?allPpl.find(x=>x.id===currentPerson.spouse_of):currentPerson;
-  const node=findNodeInTree(targetId,rootTree);
-  if(!node||!node.children||!node.children.length){alert('Gia đình này chưa có con cháu trong gia phả.');return;}
-  // Label hiển thị tên cả hai nếu là spouse
-  const label=currentPerson.spouse_of
+  let node=findNodeInTree(targetId,rootTree);
+  let label=currentPerson.spouse_of
     ?`${targetPerson?targetPerson.name:''} & ${currentPerson.name}`
     :currentPerson.name;
+
+  // Không có con → lùi lên đời trước (parent node)
+  if(!node||!node.children||!node.children.length){
+    const parentId=targetPerson?targetPerson.parent_id:null;
+    if(parentId){
+      const parentNode=findNodeInTree(parentId,rootTree);
+      if(parentNode){
+        node=parentNode;
+        const parentPerson=allPpl.find(x=>x.id===parentId);
+        label=parentPerson?parentPerson.name:'Đời trước';
+      }
+    } else {
+      // Không có cha mẹ (là root) → show 1 đời sau
+      // node đã là root, render nó luôn
+    }
+  }
+
   branchStack.push({data:node,label:label});
   updateBC();closeModal();
-  switchView('tree'); // switch to tree tab first so W/H are set correctly
+  switchView('tree');
 }
 function resetToRoot(){branchStack=[];updateBC();renderTree(rootTree);}
 function updateBC(){
